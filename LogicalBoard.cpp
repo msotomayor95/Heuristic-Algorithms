@@ -19,7 +19,7 @@ Trabajo Practico III
 
 typedef pair<int,int> par;
 typedef vector<par> movimientos;
-typedef tuple<int,int,int,string> posicion;
+
 
 par pos0 = make_pair(0,0);
 par pos1 = make_pair(-1,-1);
@@ -34,36 +34,114 @@ par pos8 = make_pair(0,-1);
 
 movimientos moves ={pos0, pos1, pos2, pos3, pos4, pos5, pos6, pos7, pos8};
 
+class Ball{
+	public:
+	//Como no le asigna ningun valor a los parametros, no se necesita definir el constructor, c++ llama al constructor por defecto 
+	
+	void setMovement(par movimiento){
+        // movement = (dir, steps) 
+		movement = movimiento;
+		tieneMov = true;
+	}
+	
+	void move(){
+		if(tieneMov){
+			if(movement.second > 0){
+				par move = moves[movement.first];	//direccion de la pelota
+				pel_i += 2*move.first;		//se mueve de a dos casilleros por paso
+				pel_j += 2*move.second;
+				movement = make_pair(movement.first, movement.second - 1);  //se reduce en 1 la cantidad de pasos
+			}	
+		}
+	}	
+	 
+	par finalPosition(){ //te da la posicion final de la pelota para el movimiento dado (podria tener que verificar si tiene o no movimiento la pelota)
+		par move = moves[movement.first];
+		int steps = movement.second;   
+		par res = make_pair(pel_i + 2*steps*move.first, pel_j + 2*steps*move.second);
+		return res;
+	}
+	
+	vector<par> trajectory(){   //Me da el vector conteniendo la trayectoria de la pelota para un movimiento dado
+        par move = moves[movement.first];
+        int steps = 2*movement.second;
+        vector<par> trayectoria;
+        par p;
+        for(int i=0; i<=steps; i++){
+			p = make_pair(pel_i + i*move.first, pel_j + i*move.second);	
+			trayectoria.push_back(p);
+		}
+		return trayectoria; 
+	 }
+	 
+	 void undoMove(){
+        if (tieneMov){    
+			par move = moves[movement.first]; 
+			pel_i -= 2*move.first;
+			pel_j -= 2*move.second;
+			movement = make_pair(movement.first, movement.second + 1);   //restaura la cantidad de pasos original
+		}
+	}
+	
+	void step_back_one(){   //solo retrocede un casillero en lugar de dos
+        if(tieneMov){
+			par move = moves[movement.first]; 
+			pel_i -= move.first;
+			pel_j -= move.second;	 
+		}
+	}
+	
+	 void imprimirPosicion(){
+        
+        cout << pel_i << " " << pel_j;
+        
+        if(tieneMov){
+			cout << " " << movement.first << " "<< movement.second;	
+		}
+			
+		cout << endl;	
+		 
+	}
+	
+	void jugadorEnPosesion(par p){
+		pel_i = p.first;
+		pel_j = p.second;
+	} 	
+	
+	
+	private:
+	par movement;	
+	bool tieneMov = false; //lo agrego para la funcion move  
+	int pel_i;
+	int pel_j;
+}; 
 
 class Player{
 public:
 
 	Player(int player_id, double pQuite=0.5, bool tienePelota=false): id(player_id), p_quite(pQuite), hayPosesion(tienePelota) {}  //constructor de jugador
 	
-	void move(int move){
+	void move(int direction){
 		old_position = make_pair(jug_i, jug_j);
-		jug_i += moves[move].first; 
-		jug_j += moves[move].second;
+		jug_i += moves[direction].first; 
+		jug_j += moves[direction].second;
 		moveBall();
 	
 	}
 	
-	void backwardMove(int move){
+	void backwardMove(int direction){
 		old_position = make_pair(jug_i, jug_j);	
-		jug_i -= moves[move].first; 
-		jug_j -= moves[move].second;
+		jug_i -= moves[direction].first; 
+		jug_j -= moves[direction].second;
 		moveBall();
 	}
 	
 	void undoMove(){
-        par p = make_pair(jug_i,jug_j);
-		if(p != old_position){
+        par p = make_pair(jug_i,jug_j);   
+		if(p != old_position){			//comparo el valor de la posicion actual con el de la posicion anterior si son iguales no hago nada.
 			jug_i = old_position.first;
 			jug_j = old_position.second;
 			moveBall();
-		}else{
-			//se rompe
-			
 		}
         // solo guarda una jugada, 
         // si quieren deshacer mas, se rompe a proposito
@@ -73,38 +151,30 @@ public:
 	
 	void moveBall(){   //el jugador se mueve con la pelota y por lo tanto la pelota tiene las mismas coordenadas que el jugador
 		if(hayPosesion){						// if not self.ball is None:   -------ver esto!-----Creo que seria definir que el jugador tiene que tener la pelota
-			ball.pel_i = jug_i;
-			ball.pel_j = jug_j;
+			par p = make_pair(jug_i, jug_j);
+			ball.jugadorEnPosesion(p);
 		}
 	}
 	
 	void takeBall(Ball pelota){
 		hayPosesion = true;
 		ball = pelota;	
-		//ball.setMovement(None);  //ver el None
+		//ball.setMovement(None);  //para simular esto hago el if de abajo
+		if(ball.tieneMov()){
+			ball.movement.second = 0;   //Le anulo la cantidad de pasos restantes es como si hubiera llegado a destino	
+		}
 		moveBall();
 	}
 	
 	void imprimirPosicion(){
-		posicion position; 
-		position = make_tuple(id, jug_i, jug_j, "IN_POSETION");	
-		if(!hayPosesion){
-			position =  make_tuple(id, jug_i, jug_j, "FREE_PLAYER");  			
+		cout<< id << " " << jug_i << " " << jug_j << " ";
+		if(hayPosesion){
+			cout << "IN_POSETION" << endl;	
+		}else{			
+			cout << "FREE_PLAYER" << endl;
 		}
-		cout<< get<0>(position) << " " << get<1>(position) << " " << get<2>(position) << " " << get<3>(position) << endl;
-		
 	}
 
-	/*	def __str__(self):
-        position = (self.id, self.i, self.j, IN_POSETION)
-        if self.ball is not None:   ---------------Ver esto no se entiende bien, no seria al reves? Si la pelota no es None esta definida y por lo tanto el jugador la posee
-            position = (self.id, self.i, self.j, FREE_PLAYER)
-
-        return str(position)
-*/
-	 
-	
-	
 private:
 	
 	int id;
@@ -116,7 +186,9 @@ private:
     bool hayPosesion;   //agrego este bool para la funcion moveBall 
 	
 	
-}; 
+};
+
+
 
 int main(){
 
