@@ -14,7 +14,7 @@
 #include <utility>
 #include <list>
 #include <climits>
-
+#include <assert.h> 
 Trabajo Practico III
 
 typedef pair<int,int> par;
@@ -186,6 +186,43 @@ private:
     bool hayPosesion;   //agrego este bool para la funcion moveBall 
 	
 	
+};
+
+class LogicalBoard{
+public:
+
+LogicalBoard(int columns, int rows, vector<par> team_1, vector<par> team_2):{
+assert(rows mod 2 == 1 && rows>=3);
+assert(columns mod 2 == 0 && columns>=2*rows);
+par inicio = make_pair(0, 0);
+score = inicio;
+for(int i=0; i<3; i++){ //team_1 contiene pares (p_id, p_quite) de los 3 jugadore del equipo A
+team_A.push_back(Player(team_1[i].first, team_1[i].second))  
+
+
+}
+
+team_A = team_1;
+team_B = team_2;
+
+}
+
+private:
+par score;
+vector<Player> team_A;   
+vector<Player> team_B;   	
+int columns;
+int rows;
+vector<int> goal_rows;
+vector<par> goal_A;
+vector<par> goal_B;
+//free_ball;  falta definir el tipo
+//last_state;  falta definir el tipo
+
+
+
+
+
 };
 
 
