@@ -16,13 +16,14 @@
 #include <climits>
 #include <assert.h>
 #include <math.h>
-#include <stdlib.h>
+
  
 Trabajo Practico III
 
 typedef pair<int,int> par;
+typedef pair<float,float> parFloat;
 typedef vector<par> movimientos;
-typedef tuple<int, string, par> mov;
+typedef tuple<int, string, par> mov;   //modelo el movimiento como par (dir, steps) para MOVIMIENTO y para PASE si es movimiento pongo (d, 0) porque no hay steps en realidad
 
 par pos0 = make_pair(0,0);
 par pos1 = make_pair(-1,-1);
@@ -37,7 +38,7 @@ par pos8 = make_pair(0,-1);
 
 movimientos moves ={pos0, pos1, pos2, pos3, pos4, pos5, pos6, pos7, pos8}; //pos0 no es direccion valida para la pelota  
 
-bool pertenece(int e, vector<int> v){
+bool pertenece(int e, vector<int>& v){
 	bool res = false;
 	for(uint i = 0; i<v.size(); i++){
 		if (e == v[i]){
@@ -48,9 +49,45 @@ bool pertenece(int e, vector<int> v){
 	return res;	
 }  
 
+bool sinParesRepetidos(vector<par> pares){
+	int i,j; 
+	for(uint k=0; k< pares.size(); i++){
+		i = pares[k].first;
+		j = pares[k].second;	
+		for(uint m=k+1; m < pares.size(); m++){
+			if(i == pares[m].first && j==pares[m].second){
+				return false;	
+			}
+		}
+	} 
+	return true;
+}
+
+mov buscarMov(int id,vector<mov> &moves){
+		uint i=0;
+		mov res;
+		while(i<moves.size()){
+			if(id == get<0>(moves[i])){
+				res = moves[i];	
+			}	
+			i++;
+		}
+		return res;
+}
+
+bool pertenecePar(par p, vector<par> v){
+	for(uint i =0; i<v.size(); i++){
+		if(p.first == v[i].first && p.second == v[i].second){
+			return true;
+		}	
+	}
+	return false;	
+}
+
 class Ball{
 	public:
-	//Como no le asigna ningun valor a los parametros, no se necesita definir el constructor, c++ llama al constructor por defecto 
+	
+	Ball(bool tieneMovimiento=false): tieneMov(tieneMovimiento) {}
 	
 	void setMovement(par movimiento){
         // movement = (dir, steps) 
@@ -122,10 +159,13 @@ class Ball{
 		pel_j = p.second;
 	} 	
 	
+	bool tieneMovimiento(){
+		return tieneMov;
+	}
 	
 	private:
 	par movement;	
-	bool tieneMov = false; //lo agrego para la funcion move  
+	bool tieneMov; //lo agrego para la funcion move  
 	int pel_i;
 	int pel_j;
 }; 
@@ -133,7 +173,7 @@ class Ball{
 class Player{
 public:
 
-	Player(int player_id, double pQuite=0.5, bool tienePelota=false): id(player_id), p_quite(pQuite), hayPosesion(tienePelota) {}  //constructor de jugador
+	Player(int player_id, float pQuite=0.5, bool tienePelota=false): id(player_id), p_quite(pQuite), hayPosesion(tienePelota) {}  //constructor de jugador
 	
 	void move(int direction){
 		old_position = make_pair(jug_i, jug_j);
@@ -174,8 +214,9 @@ public:
 		hayPosesion = true;
 		ball = pelota;	
 		//ball.setMovement(None);  //para simular esto hago el if de abajo
-		if(ball.tieneMov()){
-			ball.movement.second = 0;   //Le anulo la cantidad de pasos restantes es como si hubiera llegado a destino	
+		if(ball.tieneMovimiento()){
+			par p = make_pair(0,0);
+			ball.setMovement(p);   //Le anulo la cantidad de pasos restantes es como si hubiera llegado a destino	
 		}
 		moveBall();
 	}
@@ -189,10 +230,34 @@ public:
 		}
 	}
 
-private:
+	int p_id(){
+		return id;	
+	}
 	
+	bool conPelota(){
+		return hayPosesion;
+	}
+	int pos_i(){
+		return jug_i;
+	}
+	
+	int pos_j(){
+		return jug_j;
+	}
+	
+	void sinPelota(){
+		hayPosesion = false;
+	}
+	Ball pelota(){
+		return ball;
+	}
+	float quite(){
+		return p_quite;	
+	}
+
+private:
 	int id;
-	double p_quite;
+	float p_quite;
 	par old_position;
     int jug_i;
     int jug_j;    
@@ -205,20 +270,18 @@ private:
 class LogicalBoard{
 public:
 
-LogicalBoard(int columnas, int filas, vector<par> team_1, vector<par> team_2):{   //Hay que ver bien cual es el tipo de team_1 y team_2 puese ser que no sean pares 
-	assert(rows mod 2 == 1 && rows>=3);
-	assert(columns mod 2 == 0 && columns>=2*rows);
-	par inicio = make_pair(0, 0);
-	score = inicio;
+LogicalBoard(int columnas, int filas, vector<par> team_1, vector<par> team_2, par marcador = make_pair(0,0)): score(marcador){   //Hay que ver bien cual es el tipo de team_1 y team_2 puede ser que no sean pares 
+	assert(((filas % 2) == 1) && (filas>=3));
+	assert(((columnas % 2) == 0) && columnas>=2*filas);
 	columns = columnas;
 	rows = filas;
 	par A,B;
 	for(int i=0; i<3; i++){ //asumo que team_1 contiene pares (p_id, p_quite) de los 3 jugadores del equipo A
 		team_A.push_back(Player(team_1[i].first, team_1[i].second));
 		team_B.push_back(Player(team_2[i].first, team_2[i].second));  
-		goal_rows.push_back.((rows div 2) - 1 + i);	
+		goal_rows.push_back((int)(floor(rows/2) - 1 + i));	
 		A = make_pair(goal_rows[i],-1);
-		B = make_pair(goal_rows[i]; columns);
+		B = make_pair(goal_rows[i], columns);
 		goal_A.push_back(A);
 		goal_B.push_back(B); 
 	}
@@ -226,73 +289,137 @@ LogicalBoard(int columnas, int filas, vector<par> team_1, vector<par> team_2):{ 
 // moves = [(player_id, move_type, value)] 
 // value en [0, ..., 8] o (dir, steps) con dir en [1, ..., 8] y step en [0, ..., inf]
 
-    bool isValidTeamMove(vector<Player> team, /*ver tipo*/vector<mov> moves):
-        valid = true;
-		vector<int> player_ids;
-        # Exactamente un movimiento por jugador del equipo  //o sea len(moves) == 3
-        for(int i=0; i<team.size(); i++){
-			 player_ids.push_back(team[i].id);
+bool positionInBoard(int i, int j){
+        return 0 <= i && i < rows && 0 <= j && j < columns; 
+}
+
+bool isValidTeamMove(vector<Player> team, vector<mov> moves){
+	bool valid = true;
+	vector<int> player_ids;
+	mov player_move;
+	par posicion_jug;
+	vector<par> ball_trajectory;
+	vector<par> team_positions;
+	bool estaEnArco, trajectory_in_board, trajectory_in_goal;
+    // Exactamente un movimiento por jugador del equipo  //o sea len(moves) == 3
+    for(uint i=0; i<team.size(); i++){
+		 player_ids.push_back(team[i].p_id());
+	}
+	vector<int> idEnMoves;
+	for(uint i=0; i<moves.size(); i++){
+		if(pertenece(get<0>(moves[i]), player_ids)){
+			idEnMoves.push_back(get<0>(moves[i])); 
 		}
-		vector<int> idEnMoves;
-		for(uint i=0; i<moves.size(); i++){
-			if(pertenece(get<0>(moves[i]), player_ids){
-				idEnMoves.push_back(get<0>(moves[i])); 
-			}
-		}
-		valid = valid && (moves.size() == team.size());
-		valid = valid && (moves.size() == idEnMoves.size()); //verifique asi que los movimientos eran los de los jugadores del equipo y no hay ningun otro jugador en moves 
+	}
+	valid = valid && (moves.size() == team.size());
+	valid = valid && (moves.size() == idEnMoves.size()); //verifique asi que los movimientos eran los de los jugadores del equipo y no hay ningun otro jugador en moves 
        
 
-        # muevo los jugadores
-        for p in team:
-            player_move = moves[p.id]
-            if player_move['move_type'] == MOVIMIENTO: 
-                p.move(player_move['value'])
-            elif p.ball is None:
-                valid = False # Quiere pasar la pelota pero no la tiene
-            else:
-                # Mirar que el pase es válido: O sea que termina adentro de la cancha, en algún 
-                # arco o cruza un arco (ya que va de a dos pasos por vez).
-                # Además, no puede ser más largo que M / 2
-                valid = valid and player_move['value'][1] <= self.rows / 2
+    // muevo los jugadores
+    if(valid){  //si no era valido hasta aca, no entro en el for porque se indefine player_move
+		for (uint i=0; i<team.size(); i++){
+			player_move = buscarMov(team[i].p_id(), moves);
+			if (get<1>(player_move) == "MOVIMIENTO"){ 
+				team[i].move(get<2>(player_move).first); 
+			}else{
+				if(!team[i].conPelota()){
+					valid = false;	//Quiere pasar la pelota pero no la tiene
+				}else{
+				
+					// Mirar que el pase es válido: O sea que termina adentro de la cancha, en algún 
+					// arco o cruza un arco (ya que va de a dos pasos por vez).
+					// Además, no puede ser más largo que M / 2
+					valid = valid && (get<2>(player_move).second <= rows / 2);
 
-                Ball ball;  //crea una pelota por defecto
-                ball.i = p.i
-                ball.j = p.j
-                cout << "is valid move ball" << endl;
-                //print ball
-                ball.imprimirPelota();
-                ball.setMovement(player_move['value'])  //falta esta linea
-                //print ball
-                ball.imprimirPelota();
-                vector<par> ball_trajectory = ball.trajectory();
-                print ball_trajectory
-                for(uint i=0; i<ball_trajectory.size(); i++){
-					cout << "(" << ball_trajectory[i].first << ", " << ball_trajectory[i].second << ") ";	
+					Ball ball;  //crea una pelota por defecto
+					posicion_jug = make_pair(team[i].pos_i(), team[i].pos_j());           
+					ball.jugadorEnPosesion(posicion_jug);
+					cout << "is valid move ball" << endl;
+					//print ball
+					ball.imprimirPelota();
+					ball.setMovement(get<2>(player_move));
+					//print ball
+					ball.imprimirPelota();
+					ball_trajectory = ball.trajectory();
+					for(uint i=0; i<ball_trajectory.size(); i++){
+						cout << "(" << ball_trajectory[i].first << ", " << ball_trajectory[i].second << ") ";	
+					}
+					cout << endl;
+					cout << "is valid move ball" << endl;
+					trajectory_in_board = true;
+					trajectory_in_goal = false;
+					for(uint i =0; i<ball_trajectory.size(); i++){
+						if(!positionInBoard(ball_trajectory[i].first, ball_trajectory[i].second)){
+							trajectory_in_board = false;
+						}
+						if(pertenecePar(ball_trajectory[i], goal_A) || pertenecePar(ball_trajectory[i], goal_B)){
+							trajectory_in_goal = true;
+						}
+					}
+					valid = valid && (trajectory_in_board || trajectory_in_goal);
+					}
 				}
-				cout << endl;
-                cout << "is valid move ball" << endl;
-                trajectory_in_board = all([self.positionInBoard(t[0], t[1]) for t in ball_trajectory])
-                trajectory_in_goal = any([t in self.goal_A + self.goal_B for t in ball_trajectory])
-                valid = valid and (trajectory_in_board or trajectory_in_goal)
+				posicion_jug = make_pair(team[i].pos_i(), team[i].pos_j());
+				team_positions.push_back(posicion_jug); 	   
+		}	
+	}
+    // Dos jugadores del mismo equipo estan en la misma posicion
+	valid = valid && sinParesRepetidos(team_positions);
+        
+     
+    // Todos los jugadores deben estar dentro de la cancha
+    for(uint i =0; i<team.size(); i++){
+		//Tambien puede estar en un arco si es un jugador con pelota
+		estaEnArco = team[i].conPelota() && (pertenecePar(team_positions[i], goal_A) || pertenecePar(team_positions[i], goal_B));
+		valid = valid && (positionInBoard(team[i].pos_i(), team[i].pos_j()) || estaEnArco);
+	}
+    // Deshago los movimientos
+    for(uint i =0; i<moves.size(); i++){
+            player_move = buscarMov(team[i].p_id(), moves);
+			if (get<1>(player_move) == "MOVIMIENTO"){ 
+               team[i].undoMove();
+			}
+	}
+			
+    return valid;
+	
+}
 
-        # Dos jugadores del mismo equipo estan en la misma posicion
-        valid = valid and len(set([(p.i, p.j) for p in team])) == len(team)
+void makeTeamMove(vector<Player> team, vector<mov> moves){
+        mov player_move;
+        for(uint i =0; i<team.size(); i++){
+            player_move = buscarMov(team[i].p_id(), moves);
+            if (get<1>(player_move) == "MOVIMIENTO"){ 
+               team[i].move(get<2>(player_move).first);
+			}
+            // Si el jugador pasó la pelota se setea la dirección y fuerza y se pierde 
+            // la posesión, luego el tablero detecta la pelota libre y la mueve en cada paso
+            if (get<1>(player_move) == "PASE"){
+                free_ball = team[i].pelota();
+                free_ball.setMovement(get<2>(player_move));
+                team[i].sinPelota(); // Ya no posee la pelota
+            }    
+		}
+}
 
-        # Todos los jugadores deben estar dentro de la cancha
-        for p in team:
-            # Tambien puede estar en un arco si es un jugador con pelota
-            if p.ball is not None and (p.i, p.j) in self.goal_A + self.goal_B:
-                continue
-            valid = valid and self.positionInBoard(p.i, p.j)
+parFloat normalize(float prob_1, float prob_2){
+	float total = prob_1 + prob_2;
+    parFloat res = make_pair(prob_1/total, prob_2/total);  //no se si es un par 
+    return res;
 
-        # Deshago los movimientos
-        for p in team:
-            if moves[p.id]['move_type'] == MOVIMIENTO: 
-                p.undoMove()
+}                
+                
+void figthBall(Player p_ball, Player p_empty){
+	float prob_ball = 1 - p_ball.quite(); // probabilidad de defensa
+    float prob_empty = p_empty.quite(); // probabilidad de quite
 
-        return valid
-
+    prob_empty = normalize(prob_ball, prob_empty).second;
+    
+    if ((((float) rand()) / 1) <= prob_empty){   //Hace que sacarle la pelota al otro jugador dependa del "azar"
+		p_empty.takeBall(p_ball.pelota());
+        p_ball.sinPelota();                
+    }        
+}
 private:
 par score;   //puntaje del partido
 vector<Player> team_A;   
@@ -302,21 +429,15 @@ int rows;
 vector<int> goal_rows; //filas del arco 
 vector<par> goal_A;   //coordenadas del arco
 vector<par> goal_B;
-//free_ball;  falta definir el tipo
+Ball free_ball;  
 //last_state;  falta definir el tipo
-
-
-
-
 
 };
 
 
 
 int main(){
-
+srand(time(NULL));
 	
-	
-
 return 0;	
 } 
