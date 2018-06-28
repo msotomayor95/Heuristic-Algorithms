@@ -668,8 +668,8 @@ char winner(){
 	}
 }
 
-//Asumo que las posiciones dentro de la cancha son validas para I todas a la izquierda y para D todas a la derecha
-void startingPositions(vector<par> position_I, vector<par> position_D, char starting){
+//Asumo que las posiciones dentro de la cancha son validas y que siempre empieza el equipo llamado A a la izquierda de la cancha
+void startingPositions(vector<par> position_A, vector<par> position_B/*, char starting*/){
 		//reseteo el estado anterior, empieza de cero 
 		hayEstadoAnteriorBall = false;
 		hayEstadoAnteriorPlayer = false;
@@ -677,32 +677,32 @@ void startingPositions(vector<par> position_I, vector<par> position_D, char star
 		for(uint i=0; i<team_A.size(); i++){
 			team_A[i].sinPelota();
 			team_B[i].sinPelota();
-			if(starting == 'A'){
-				team_A[i].posicionarJugador(position_I[i]);
-				team_B[i].posicionarJugador(position_D[i]);
-			}else if(starting == 'B'){
+			//if(starting == 'A'){
+				team_A[i].posicionarJugador(position_A[i]);
+				team_B[i].posicionarJugador(position_B[i]);
+			/*}else if(starting == 'B'){
 				team_A[i].posicionarJugador(position_D[i]);
 				team_B[i].posicionarJugador(position_I[i]);
 				
-			}	
+			}*/	
 		}
 		hayPelotaLibre = false;
 		
 		// le doy la pelota al jugador que saca y lo pongo en el centro
 		par pos = make_pair((int)(rows/2), (columns/2) - 1);
 		Ball b;
-		if(starting == 'A'){
+		//if(starting == 'A'){
 			team_A[0].posicionarJugador(pos);
 			team_A[0].takeBall(b);	
 			
-		}else if(starting == 'B'){
+		/*}else if(starting == 'B'){
 			team_B[0].posicionarJugador(pos);
 			team_B[0].takeBall(b);	
-		}
+		}*/
 }
 
-void reset(vector<par> position_I, vector<par> position_D, char starting){  //reinicia el juego
-        startingPositions(position_I, position_D, starting);
+void reset(vector<par> position_A, vector<par> position_B/*, char starting*/){  //reinicia el juego
+        startingPositions(position_A, position_B/*, starting*/);
         score = make_pair(0,0);
 } 
 	
