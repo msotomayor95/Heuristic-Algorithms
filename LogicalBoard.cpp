@@ -287,6 +287,11 @@ public:
 	float quite(){
 		return p_quite;	
 	}
+	
+	void posicionarJugador(par p){
+		jug_i = p.first;
+		jug_j = p.second;	
+	}
 
 private:
 	int id;
@@ -301,7 +306,7 @@ private:
 };
 
 typedef pair<vector<Player>, vector<Player> > statePlayer;   //(par(equipoA, equipoB), pos_i pelota, pos_j pelota, dir pelota, steps pelota)
-typedef pair<int,int,int,int> stateBall; tupla<pos_i pelota, pos_j pelota, dir pelota, steps pelota>
+
 
 class LogicalBoard{
 public:
@@ -312,7 +317,8 @@ LogicalBoard(int columnas, int filas, vector<par> team_1, vector<par> team_2, pa
 	columns = columnas;
 	rows = filas;
 	hayPelotaLibre = false;
-	hayEstadoAnterior = false;
+	hayEstadoAnteriorPlayer = false;
+	hayEstadoAnteriorBall = false;
 	par A,B;
 	for(int i=0; i<3; i++){ //asumo que team_1 contiene pares (p_id, p_quite) de los 3 jugadores del equipo A
 		team_A.push_back(Player(team_1[i].first, team_1[i].second));
@@ -460,7 +466,7 @@ void figthBall(Player p_ball, Player p_empty){
     }        
 }
 
-void fairFaightBall(Player p1, Player p2){
+void fairFightBall(Player p1, Player p2){
         
         float prob_p2 = normalize(p1.quite(), p2.quite()).second; // ambos usan la probabilidad de quite  (_, ***)
         float x = ((float) rand()) / 1;
@@ -481,15 +487,15 @@ bool intercepted(Player curr_state_player, char team){
         // Buscar el estado anterior del jugador que recibo como parametro
         Player prev_state_player(curr_state_player.p_id(), curr_state_player.quite());
         if(team == 'A'){
-			for(uint i = 0; i< (get<0>(last_statePlayer).first).size(); i++){
-				if(get<0>(last_statePlayer).first[i].p_id() == curr_state_player.p_id()){//si es el jugador que buscaba
-					prev_state_player = get<0>(last_statePlayer).first[i]; //Me guardo el estado anterior de ese jugador
+			for(uint i = 0; i< (last_statePlayer.first).size(); i++){
+				if(last_statePlayer.first[i].p_id() == curr_state_player.p_id()){//si es el jugador que buscaba
+					prev_state_player = last_statePlayer.first[i]; //Me guardo el estado anterior de ese jugador
 				} 
 			} 	
 		}else if (team == 'B'){
-			for(uint i = 0; i< (get<0>(last_statePlayer).second).size(); i++){
-				if(get<0>(last_statePlayer).second[i].p_id() == curr_state_player.p_id()){//si es el jugador que buscaba
-					prev_state_player = get<0>(last_statePlayer).second[i];
+			for(uint i = 0; i< (last_statePlayer.second).size(); i++){
+				if(last_statePlayer.second[i].p_id() == curr_state_player.p_id()){//si es el jugador que buscaba
+					prev_state_player = last_statePlayer.second[i];
 				}
 			}
 		}
@@ -504,11 +510,38 @@ bool intercepted(Player curr_state_player, char team){
         return result;
 }
 
-void makeMove(vector<mov> moves_A, vector<mov> moves_B){
+char updateScore(){ //Devuelve el equipo goleado
+	
+	Ball ball = free_ball;	
+
+	if(!hayPelotaLibre){
+		for(uint i=0; i<team_A.size(); i++){
+			if(team_A[i].tienePelota()){
+				ball =  team_A[i].pelota();
+			}
+			if(team_B[i].tienePelota()){
+				ball =  team_B[i].pelota();
+			}
+		}
+	}	
+	par pos_Pelota = make_pair(ball.posPel_i(), ball.posPel_j());
+	if(pertenecePar(pos_Pelota, goal_A)){
+		score = make_pair(score.first, score.second +1);
+		return 'A'; 										//Devuelve el equipo goleado
+	}else if(pertenecePar(pos_Pelota, goal_B)){
+		score = make_pair(score.first+1, score.second);
+		return 'B'; 
+	}
+	
+	return 'N';    //No hubo gol (***) es un reemplazo de None
+	
+}
+
+char makeMove(vector<mov> moves_A, vector<mov> moves_B){ //Me dice el arco goleado tras la jugada y actualiza el marcador, si no hubo gol devuelve N.
 	assert(isValidTeamMove(team_A, moves_A));
     assert(isValidTeamMove(team_B, moves_B));
     
-    last_state = getState();
+    getState();  //Antes de hacer algun movimiento cargo los valores del equipo actual en last_state
 	
 	makeTeamMove(team_A, moves_A);
     makeTeamMove(team_B, moves_B);
@@ -532,7 +565,7 @@ void makeMove(vector<mov> moves_A, vector<mov> moves_B){
 			intercepters[0].takeBall(free_ball);
             hayPelotaLibre = false;
         }else if (intercepters.size() == 2){
-            fairFaightBall(intercepters[0], intercepters[1]);
+            fairFightBall(intercepters[0], intercepters[1]);
 		}else{
 			free_ball.move();  //No hubo ningun jugado interceptando la pelota, por lo tanto sigue su curso 
 			bool ball_in_board = positionInBoard(free_ball.posPel_i(), free_ball.posPel_j()); //Me fijo si despues del movimiento la pelota sigue en la cancha(sin inlcuir los arcos)
@@ -552,7 +585,7 @@ void makeMove(vector<mov> moves_A, vector<mov> moves_B){
 					players_to_fight[0].takeBall(free_ball);
                     hayPelotaLibre = false;
                 }else if(players_to_fight.size() == 2){
-                       fairFaightBall(players_to_fight[0], players_to_fight[1]);
+                       fairFightBall(players_to_fight[0], players_to_fight[1]);
                 }else if(is_neighbour(posPelota, arcos)){  //Si se verifico que era un movimiento valido no deberia pasar (**)
 					// Si la pelota no está en la cancha y es vecina del arco, entonces cruzo el arco 
                     // y quedó atrapada en las redes, por lo que hay que volver un paso atrás.
@@ -602,27 +635,28 @@ return updateScore();
     
 }
 
- undoMove(state ultimo_estado){  //(***)
-        ultimo_estado = last_state;
-
-        if(!hayEstadoAnterior){
-            return;
-        }    
-
-        team_A = get<0>(ultimo_estado).first;
-        team_B = get<1>(ultimo_estado).second;
-
-        self.free_ball = None
-        if last_state['ball'] is not None:
-            self.free_ball = Ball()
-            self.free_ball.i = last_state['ball'][0] 
-            self.free_ball.j = last_state['ball'][1] 
-            self.free_ball.movement = last_state['ball'][2:4]
+void getState(){
+		if(hayPelotaLibre){
+			last_stateBall = free_ball;
+			hayEstadoAnteriorBall = true;	
+		}
+		last_statePlayer = make_pair(team_A, team_B);
+		hayEstadoAnteriorPlayer = true;
 }
-/*def reset(self, position_A, position_B, starting):
-        self.startingPositions(position_A, position_B, starting)
-        self.score[A] = self.score[B] = 0;
-*/
+
+void undoMove(){
+	if(hayEstadoAnteriorPlayer){
+		team_A = last_statePlayer.first;
+		team_B = last_statePlayer.second;
+		hayEstadoAnteriorPlayer = false;	//No voy a poder hacer undoMove dos veces seguidas
+	}
+	if(hayEstadoAnteriorBall){
+		free_ball = last_stateBall;
+		hayEstadoAnteriorBall = false;
+	}
+}
+
+
 char winner(){
 	if (score.first > score.second){
 		return 'A';
@@ -634,110 +668,44 @@ char winner(){
 	}
 }
 
-updateScore(){
-	
-	Ball ball = free_ball;	
-
-	if(!hayPelotaLibre){
+//Asumo que las posiciones dentro de la cancha son validas para I todas a la izquierda y para D todas a la derecha
+void startingPositions(vector<par> position_I, vector<par> position_D, char starting){
+		//reseteo el estado anterior, empieza de cero 
+		hayEstadoAnteriorBall = false;
+		hayEstadoAnteriorPlayer = false;
+		// Saco la pelota del juego y pongo a los jugadores en su lugar
 		for(uint i=0; i<team_A.size(); i++){
-			if(team_A[i].tienePelota()){
-				ball =  team_A[i].pelota();
-			}
-			if(team_B[i].tienePelota()){
-				ball =  team_B[i].pelota();
-			}
+			team_A[i].sinPelota();
+			team_B[i].sinPelota();
+			if(starting == 'A'){
+				team_A[i].posicionarJugador(position_I[i]);
+				team_B[i].posicionarJugador(position_D[i]);
+			}else if(starting == 'B'){
+				team_A[i].posicionarJugador(position_D[i]);
+				team_B[i].posicionarJugador(position_I[i]);
+				
+			}	
 		}
-	}	
-	par pos_Pelota = make_pair(ball.posPel_i(), ball.posPel_j());
-	if(pertenecePar(pos_Pelota, goal_A)){
-		score = make_pair(score.first, score.second +1);
-		return 'A'; 										//Devuelve el equipo goleado
-	}else if(pertenecePar(pos_Pelota, goal_B)){
-		score = make_pair(score.first+1, score.second);
-		return 'B'; 
-	}
-	
-	return 'N';    //No hubo gol (***) es un reemplazo de None
-	
+		hayPelotaLibre = false;
+		
+		// le doy la pelota al jugador que saca y lo pongo en el centro
+		par pos = make_pair((int)(rows/2), (columns/2) - 1);
+		Ball b;
+		if(starting == 'A'){
+			team_A[0].posicionarJugador(pos);
+			team_A[0].takeBall(b);	
+			
+		}else if(starting == 'B'){
+			team_B[0].posicionarJugador(pos);
+			team_B[0].takeBall(b);	
+		}
 }
 
-
-
-void reset(position_A, position_B, starting){
-        startingPositions(position_A, position_B, starting);
+void reset(vector<par> position_I, vector<par> position_D, char starting){  //reinicia el juego
+        startingPositions(position_I, position_D, starting);
         score = make_pair(0,0);
 } 
-
-/*def startingPositions(self, position_A, position_B, starting):
-
-        # Mira que las posiciones iniciales sean en el lado correcto de la cancha
-        assert all([j < int(floor(self.columns / 2)) for _, j in position_A.values()])
-        assert all([j >= int(floor(self.columns / 2)) for _, j in position_B.values()])
-
-        # Saco la pelota del juego
-        for p in self.team_A + self.team_B:
-            p.ball = None
-
-        self.free_ball = None
-
-        # Coloco los jugadores en las posiciones correctas
-        for p, (i, j) in position_A.iteritems():
-            self.team_A[p].i = i
-            self.team_A[p].j = j
-
-        for p, (i, j) in position_B.iteritems():
-            self.team_B[p].i = i
-            self.team_B[p].j = j
-
-        # le doy la pelota al jugador que saca y lo pongo en el centro
-        if starting == A:
-            self.team_A[0].i = int(self.rows / 2)
-            self.team_A[0].j = (self.columns / 2) - 1
-            self.team_A[0].takeBall(Ball())
-        else:
-            self.team_B[0].i = int(self.rows / 2)
-            self.team_B[0].j = (self.columns / 2)
-            self.team_B[0].takeBall(Ball())       
-
-
-*/
-
-state getState(){
-	stateBall ball_position;
-	if(hayPelotaLibre){
-		ball_position = make_tuple()
-	}
-	}
-
-    def getState()
-        ball_position = None
-        if self.free_ball is not None:
-            ball_position = (self.free_ball.i, self.free_ball.j, self.free_ball.movement[0], self.free_ball.movement[1])
-        
-        players_a = {p.id: Player(p.id, p.p_quite) for p in self.team_A}
-        players_b = {p.id: Player(p.id, p.p_quite) for p in self.team_B}
-
-        for p in self.team_A:
-            players_a[p.id].i = p.i
-            players_a[p.id].j = p.j
-            if p.ball is not None:
-                players_a[p.id].takeBall(Ball())
-
-        for p in self.team_B:
-            players_b[p.id].i = p.i
-            players_b[p.id].j = p.j
-            if p.ball is not None:
-                players_b[p.id].takeBall(Ball())
-
-        return {
-            'players': {
-                A: players_a.values(),
-                B: players_b.values()
-            },
-            'ball': ball_position
-        }
-
-
+	
 vector<par> getGoal(char team){
         if (team == 'A'){
             return goal_A;
@@ -770,7 +738,7 @@ Ball free_ball;
 bool hayPelotaLibre;  
 statePlayer last_statePlayer;
 bool hayEstadoAnteriorPlayer;
-stateBall last_stateBall;
+Ball last_stateBall;
 bool hayEstadoAnteriorBall; 
 
 };
