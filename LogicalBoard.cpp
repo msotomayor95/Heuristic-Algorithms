@@ -669,7 +669,7 @@ char winner(){
 }
 
 //Asumo que las posiciones dentro de la cancha son validas y que siempre empieza el equipo llamado A a la izquierda de la cancha
-void startingPositions(vector<par> position_A, vector<par> position_B/*, char starting*/){
+void startingPositions(vector<par> position_A, vector<par> position_B, char starting){
 		//reseteo el estado anterior, empieza de cero 
 		hayEstadoAnteriorBall = false;
 		hayEstadoAnteriorPlayer = false;
@@ -677,32 +677,29 @@ void startingPositions(vector<par> position_A, vector<par> position_B/*, char st
 		for(uint i=0; i<team_A.size(); i++){
 			team_A[i].sinPelota();
 			team_B[i].sinPelota();
-			//if(starting == 'A'){
-				team_A[i].posicionarJugador(position_A[i]);
-				team_B[i].posicionarJugador(position_B[i]);
-			/*}else if(starting == 'B'){
-				team_A[i].posicionarJugador(position_D[i]);
-				team_B[i].posicionarJugador(position_I[i]);
-				
-			}*/	
+			
+			team_A[i].posicionarJugador(position_A[i]);
+			team_B[i].posicionarJugador(position_B[i]);
+		
 		}
 		hayPelotaLibre = false;
 		
-		// le doy la pelota al jugador que saca y lo pongo en el centro
-		par pos = make_pair((int)(rows/2), (columns/2) - 1);
+		// le doy la pelota al jugador que saca y lo pongo en el centro; despues de un gol si el equipo B fue goleado, tiene la posesion de la pelota 
+		par pos_inicial_A = make_pair((int)(rows/2), (columns/2) - 1);
+		par pos_inicial_B = make_pair((int)(rows/2), (columns/2));
 		Ball b;
-		//if(starting == 'A'){
-			team_A[0].posicionarJugador(pos);
+		if(starting == 'A'){
+			team_A[0].posicionarJugador(pos_inicial_A);
 			team_A[0].takeBall(b);	
 			
-		/*}else if(starting == 'B'){
-			team_B[0].posicionarJugador(pos);
+		}else if(starting == 'B'){
+			team_B[0].posicionarJugador(pos_inicial_B);
 			team_B[0].takeBall(b);	
-		}*/
+		}
 }
 
-void reset(vector<par> position_A, vector<par> position_B/*, char starting*/){  //reinicia el juego
-        startingPositions(position_A, position_B/*, starting*/);
+void reset(vector<par> position_A, vector<par> position_B){  //reinicia el juego, siempre inicia el equipo A al comienzo del partido
+        startingPositions(position_A, position_B, 'A');
         score = make_pair(0,0);
 } 
 	
