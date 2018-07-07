@@ -256,7 +256,7 @@ public:
 	void imprimirJugador(){
 		cout<< id << " " << jug_i << " " << jug_j << " ";
 		if(hayPosesion){
-			cout << "IN_POSETION" << endl;	
+			cout << "IN_POSETION" << endl;
 		}else{			
 			cout << "FREE_PLAYER" << endl;
 		}
@@ -372,7 +372,7 @@ bool isValidTeamMove(vector<Player> team, vector<mov> moves){
 				
 					// Mirar que el pase es válido: O sea que termina adentro de la cancha, en algún 
 					// arco o cruza un arco (ya que va de a dos pasos por vez).
-					// Además, no puede ser más largo que M / 2
+                    // Además, no puede ser más largo que M / 2
 					valid = valid && (get<2>(player_move).second <= rows / 2);
 
 					Ball ball;  //crea una pelota por defecto
@@ -719,7 +719,13 @@ vector<Player> getitem(char team_name){
 	}
 }
 
+bool pelota_libre(){
+    return hayPelotaLibre;
+};
 
+Ball dame_pelota_libre(){
+    return free_ball;
+};
 
 
 private:
@@ -743,7 +749,41 @@ bool hayEstadoAnteriorBall;
 
 
 int main(){
-srand(time(NULL));
+    float quite = 0.5;
+    vector<par> team_1 = {make_pair(0, quite), make_pair(1, quite), make_pair(2, quite)};
+    vector<par> team_2 = {make_pair(3, quite), make_pair(4, quite), make_pair(5, quite)};
+    LogicalBoard tablero( 10, 5, team_1, team_2);
+
+    vector<par> posA = {make_pair(1, 1), make_pair(2, 1), make_pair(3, 1)};
+    vector<par> posB = {make_pair(1, 9), make_pair(2, 9), make_pair(3, 9)};
+    tablero.reset(posA, posB);
+
+    par m = make_pair(0, 0);
+    vector<mov> jugada_B = {make_tuple(3, "MOVIMIENTO", m), make_tuple(4, "MOVIMIENTO", m), make_tuple(5, "MOVIMIENTO", m)};
+    par m1 = make_pair(1, 2);
+    par m2 = make_pair(3, 0);
+    par m3 = make_pair(4, 0);
+    vector<mov> jugada_A = {make_tuple(0, "PASE", m1), make_tuple(1, "MOVIMIENTO", m2), make_tuple(2, "MOVIMIENTO", m2)};
+
+    tablero.makeMove(jugada_A, jugada_B);
+    auto team1 = tablero.getitem('A');
+    auto team2 = tablero.getitem('B');
+
+    for (int i = 0; i < 3; ++i) {
+        team1[i].imprimirJugador();
+    }
+    for (int i = 0; i < 3; ++i) {
+        team2[i].imprimirJugador();
+
+    }
+    if(tablero.pelota_libre()){
+        tablero.dame_pelota_libre().imprimirPelota();
+    }
+
+
+
+
+    //srand(time(NULL));
 	
 return 0;	
 } 
