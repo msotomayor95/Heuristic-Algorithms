@@ -311,7 +311,7 @@ typedef pair<vector<Player>, vector<Player> > statePlayer;   //(par(equipoA, equ
 class LogicalBoard{
 public:
 
-LogicalBoard(int columnas, int filas, vector<par> team_1, vector<par> team_2, par marcador = make_pair(0,0)): score(marcador){   //Hay que ver bien cual es el tipo de team_1 y team_2 puede ser que no sean pares 
+LogicalBoard(int columnas, int filas, vector<par> team_1, vector<par> team_2, par marcador = make_pair(0,0)): score(marcador){   //Asumo el tipo de team_1 y team_2 contienen pares (p_id, p_quite) de cada jugador del equipo 1 y 2
 	assert(((filas % 2) == 1) && (filas>=3));
 	assert(((columnas % 2) == 0) && columnas>=2*filas);
 	columns = columnas;
