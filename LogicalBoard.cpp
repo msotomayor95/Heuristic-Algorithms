@@ -266,6 +266,8 @@ public:
 		return id;
 	}
 
+
+
 	bool tienePelota(){
 		return hayPosesion;
 	}
@@ -314,6 +316,7 @@ public:
 LogicalBoard(int columnas, int filas, vector<par> team_1, vector<par> team_2, par marcador = make_pair(0,0)): score(marcador){   //Asumo el tipo de team_1 y team_2 contienen pares (p_id, p_quite) de cada jugador del equipo 1 y 2
 	assert(((filas % 2) == 1) && (filas>=3));
 	assert(((columnas % 2) == 0) && columnas>=2*filas);
+
 	columns = columnas;
 	rows = filas;
 	hayPelotaLibre = false;
@@ -332,6 +335,23 @@ LogicalBoard(int columnas, int filas, vector<par> team_1, vector<par> team_2, pa
 }
 // moves = [(player_id, move_type, value)]
 // value en [0, ..., 8] o (dir, steps) con dir en [1, ..., 8] y step en [0, ..., inf]
+
+    bool posesion(char nombre){
+        if(nombre == 'A'){
+            for (int i = 0; i < 3; ++i) {
+                if(team_A[i].tienePelota()) return true;
+            }
+        }
+        else if(nombre == 'B'){
+                for (int i = 0; i < 3; ++i) {
+                    if(team_B[i].tienePelota()) return true;
+                }
+        }
+        else{
+            return false;
+        }
+
+    }
 
 bool positionInBoard(int i, int j){
         return 0 <= i && i < rows && 0 <= j && j < columns;
@@ -704,6 +724,24 @@ void reset(vector<par> position_A, vector<par> position_B){  //reinicia el juego
         score = make_pair(0,0);
 }
 
+    //PRE CONDICION QUE EL JUGADOR DEL EQUIPO DE ENTRADA TENGA LA PELOTA
+    par jugador_con_pelota(char nombre){
+        if(nombre == 'A'){
+            for (int i = 0; i < 3; ++i) {
+                if(team_A[i].tienePelota()){
+                    return make_pair(team_A[i].pos_i(), team_A[i].pos_j());
+                }
+            }
+        }
+        else{
+            for (int j = 0; j < 3; ++j) {
+                if(team_B[j].tienePelota()){
+                    return make_pair(team_B[j].pos_i(), team_B[j].pos_j());
+                }
+            }
+        }
+    }
+
 vector<par> getGoal(char team){
         if (team == 'A'){
             return goal_A;
@@ -712,7 +750,7 @@ vector<par> getGoal(char team){
 	}
 }
 
-vector<Player> getitem(char team_name){
+vector<Player>& getitem(char team_name){
         if (team_name == 'A'){
             return team_A;
 	}else if(team_name == 'B'){
@@ -728,6 +766,13 @@ Ball dame_pelota_libre(){
     return free_ball;
 };
 
+    int& columnas(){
+        return columns;
+    };
+
+    int& filas(){
+        return rows;
+    };
 
 private:
 par score;   //puntaje del partido
@@ -746,6 +791,109 @@ Ball last_stateBall;
 bool hayEstadoAnteriorBall;
 
 };
+
+class Team{
+public:
+    float distAlArco(){
+        float suma_total = 0;
+        int dif_i, dif_j;
+        int arco_i = (int)(floor(filas/2));
+        int arco_j;
+        if(izq){
+            arco_j = columnas-1;
+        }
+        else{
+            arco_j = 0;
+        }
+        for (int i = 0; i < 3; ++i) {
+            dif_i = pow((equipo[i].pos_i() - arco_i), 2);
+            dif_j = pow((equipo[i].pos_j() - arco_j), 2);
+            suma_total += sqrt(dif_i + dif_j);
+        }
+        suma_total = suma_total / (filas * columnas);
+        return suma_total;
+    };
+
+    float distARival(par& rival){
+        float suma_total = 0;
+        for (int i = 0; i < 3; ++i) {
+            suma_total = pow((equipo[i].pos_i() - rival.first), 2) + pow((equipo[i].pos_j() - rival.second), 2);
+            suma_total = sqrt(suma_total);
+        }
+        suma_total = suma_total / (filas * columnas);
+        return suma_total;
+    };
+
+    float distAPelota(LogicalBoard& t){
+        float suma_total = 0;
+        int p_i, p_j;
+        p_i = t.dame_pelota_libre().posPel_i();
+        p_j = t.dame_pelota_libre().posPel_j();
+        for (int i = 0; i < 3; ++i) {
+            suma_total = pow((equipo[i].pos_i() - p_i), 2) + pow((equipo[i].pos_j() - p_j), 2);
+            suma_total = sqrt(suma_total);
+        }
+        suma_total = suma_total / (filas * columnas);
+        return suma_total;
+    }
+
+    float puntuar_ofensiva(){
+        float puntaje_final = 0;
+        //metodo que llama a la pos del team
+        float esquiva = pesos[0] * (1-equipo[0].quite()) + pesos[1] * (1-equipo[1].quite()) +
+                pesos[2] * (1-equipo[2].quite());
+        puntaje_final = pesos[3] * distAlArco() + esquiva;
+        return puntaje_final;
+    };
+
+    float puntuar_defensiva(LogicalBoard& t){
+        float puntaje_final = 0;
+        char nom = 'A';
+        if (nombre == 'A') nom = 'B';
+        float quites = pesos[0] * equipo[0].quite() + pesos[1] * equipo[1].quite() + pesos[2] * equipo[2].quite();
+        auto p = t.jugador_con_pelota(nom);
+        puntaje_final = pesos[4] * distARival(p) + quites;
+        return puntaje_final;
+    };
+
+    float puntuar_libre(LogicalBoard& t ){
+        float puntaje_final = 0;
+        puntaje_final = pesos[5] * distAPelota(t);
+        return puntaje_final;
+    };
+
+    float tipo_de_movimientos(LogicalBoard& t){
+        vector<mov> mejor_jugada;
+        if(t.pelota_libre()){
+            //auto p = make_pair(t.dame_pelota_libre().posPel_i(), t.dame_pelota_libre().posPel_j());
+            //puntaje_final = puntuar_libre(p);
+            mejor_jugada = generar_mov_libres();
+        }
+        else if(t.posesion(nombre)){
+            //puntaje_final = puntuar_ofensiva(t);
+            mejor_jugada = generar_mov_ofensivo();
+        }
+        else{
+            //puntaje_final = puntuar_defensiva(t);
+            mejor_jugada = generar_mov_defensivo();
+        }
+    }
+
+
+private:
+    vector<Player> equipo;
+    int filas;
+    int columnas;
+    int turnos;
+    char nombre;
+    bool izq;
+    // de la posicion 0 a 2 estan los p.quite de cada jugador
+    // en la posicion 3 esta la distancia al arco
+    // en la posicion 4 esta la distancia al rival con pelota
+    // en la posicion 5 esta la distancia a la pelota libre
+    vector<int> pesos;
+};
+
 
 
 
