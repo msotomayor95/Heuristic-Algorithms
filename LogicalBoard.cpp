@@ -405,6 +405,7 @@ public:
                         //print ball
                         ball.imprimirPelota();
                         ball_trajectory = ball.trajectory();
+                        ////////////SACAR ESTA IMPRESION
                         for(uint i=0; i<ball_trajectory.size(); i++){
                             cout << "(" << ball_trajectory[i].first << ", " << ball_trajectory[i].second << ") ";
                         }
@@ -887,7 +888,7 @@ public:
         if (nombre == 'A') nom = 'B';
         float quites = pesos[0] * equipo[0].quite() + pesos[1] * equipo[1].quite() + pesos[2] * equipo[2].quite();
         auto p = t.jugador_con_pelota(nom);
-        puntaje_final = pesos[4] * distARival(p) + quites;
+        puntaje_final = pesos[4] * distARival(p) + quites + pesos[7] * (int)golContra(t);
         return puntaje_final;
     };
 
@@ -915,7 +916,7 @@ public:
         }
     }
 
-    vector<mov> generar_mov_libres(LogicalBoard& t){
+    vector<vector<mov>> generar_mov_libres(LogicalBoard& t){
         int ball_i = t.dame_pelota_libre().posPel_i();
         int ball_j = t.dame_pelota_libre().posPel_j();
         int i, j, resta;
@@ -1005,10 +1006,65 @@ public:
                 }
             }
         }
+        vector<vector<mov>> v = crearMovValido(t, mov_equipo);
+        return v;
     }
 
-    vector<mov> generar_mov_ofensivos(LogicalBoard& t){
 
+
+    vector<vector<mov>> generar_mov_ofensivos(LogicalBoard& t){
+        par arc_rival = t.getGoal('A')[1];
+        if (nombre == 'A'){
+            arc_rival = t.getGoal('B')[1];
+        }
+        vector<vector<mov>> mov_equipo(3);
+        mov movi0;
+        vector<Player> equipoJ;
+        equipoJ = t.getitem(nombre);
+        for (int i = 0; i < 3; ++i) {
+            movi0 = make_tuple(equipoJ[i].p_id(), "MOVIMIENTO", make_pair(0, 0));
+            mov_equipo[i].push_back(movi0);
+            movi0 = make_tuple(equipoJ[i].p_id(), "MOVIMIENTO", make_pair(2, 0));
+            mov_equipo[i].push_back(movi0);
+            movi0 = make_tuple(equipoJ[i].p_id(), "MOVIMIENTO", make_pair(6, 0));
+            mov_equipo[i].push_back(movi0);
+            if(nombre == 'A'){
+                movi0 = make_tuple(equipoJ[i].p_id(), "MOVIMIENTO", make_pair(3, 0));
+                mov_equipo[i].push_back(movi0);
+                movi0 = make_tuple(equipoJ[i].p_id(), "MOVIMIENTO", make_pair(4, 0));
+                mov_equipo[i].push_back(movi0);
+                movi0 = make_tuple(equipoJ[i].p_id(), "MOVIMIENTO", make_pair(5, 0));
+                mov_equipo[i].push_back(movi0);
+                if(equipoJ[i].tienePelota()){
+                    int f_max = filas/2;
+                    movi0 = make_tuple(equipoJ[i].p_id(), "PASE", make_pair(3, f_max));
+                    mov_equipo[i].push_back(movi0);
+                    movi0 = make_tuple(equipoJ[i].p_id(), "PASE", make_pair(4, f_max));
+                    mov_equipo[i].push_back(movi0);
+                    movi0 = make_tuple(equipoJ[i].p_id(), "PASE", make_pair(5, f_max));
+                    mov_equipo[i].push_back(movi0);
+                }
+            }
+            else {
+                movi0 = make_tuple(equipoJ[i].p_id(), "MOVIMIENTO", make_pair(1, 0));
+                mov_equipo[i].push_back(movi0);
+                movi0 = make_tuple(equipoJ[i].p_id(), "MOVIMIENTO", make_pair(7, 0));
+                mov_equipo[i].push_back(movi0);
+                movi0 = make_tuple(equipoJ[i].p_id(), "MOVIMIENTO", make_pair(8, 0));
+                mov_equipo[i].push_back(movi0);
+                if(equipoJ[i].tienePelota()){
+                    int f_max = filas/2;
+                    movi0 = make_tuple(equipoJ[i].p_id(), "PASE", make_pair(1, f_max));
+                    mov_equipo[i].push_back(movi0);
+                    movi0 = make_tuple(equipoJ[i].p_id(), "PASE", make_pair(7, f_max));
+                    mov_equipo[i].push_back(movi0);
+                    movi0 = make_tuple(equipoJ[i].p_id(), "PASE", make_pair(8, f_max));
+                    mov_equipo[i].push_back(movi0);
+                }
+            }
+        }
+        vector<vector<mov>> v = crearMovEquipo(t, mov_equipo);
+        return v;
     }
 
 
@@ -1025,6 +1081,7 @@ private:
     // en la posicion 4 esta la distancia al rival con pelota
     // en la posicion 5 esta la distancia a la pelota libre
     // en la posicion 6 es el peso de hacer un gol
+    // en la posicion 7 es el peso de ser goleado tiene que ser negativo
     vector<int> pesos;
 };
 
