@@ -794,11 +794,13 @@ bool hayEstadoAnteriorBall;
 
 class Team{
 public:
-    float distAlArco(){
+    float distAlArco(LogicalBoard& t){
         float suma_total = 0;
         int dif_i, dif_j;
         int arco_i = (int)(floor(filas/2));
         int arco_j;
+        vector<Player> ju = t.getitem(nombre);
+
         if(izq){
             arco_j = columnas-1;
         }
@@ -844,12 +846,12 @@ public:
 
     }
 
-    float puntuar_ofensiva(){
+    float puntuar_ofensiva(LogicalBoard& t){
         float puntaje_final = 0;
         //metodo que llama a la pos del team
         float esquiva = pesos[0] * (1-equipo[0].quite()) + pesos[1] * (1-equipo[1].quite()) +
                 pesos[2] * (1-equipo[2].quite());
-        puntaje_final = pesos[3] * distAlArco() + esquiva;
+        puntaje_final = pesos[3] * distAlArco(t) + esquiva;
         return puntaje_final;
     };
 
@@ -878,8 +880,8 @@ public:
             mejor_jugada = generar_mov_libres(t);
         }
         else if(t.posesion(nombre)){
-            //puntaje_final = puntuar_ofensiva(t);
-           // mejor_jugada = generar_mov_ofensivo();
+           // puntaje_final = puntuar_ofensiva(t); despues lo uso ?
+            mejor_jugada = generar_mov_ofensivos(t);
         }
         else{
             //puntaje_final = puntuar_defensiva(t);
@@ -905,10 +907,18 @@ public:
                 if(j > 0){
                     movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(4, 0));
                     mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(3, 0));
+                    mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(5, 0));
+                    mov_equipo[k].push_back(movi0);
                     //AGREGAR LOS MOVIMIENTOS DIAGONALES EN ESTOS DE I O J IGUAL A 0
                 }
                 else{
                     movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(8, 0));
+                    mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(1, 0));
+                    mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(7, 0));
                     mov_equipo[k].push_back(movi0);
                 }
             }
@@ -916,9 +926,17 @@ public:
                 if(i > 0){
                     movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(6, 0));
                     mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(7, 0));
+                    mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(5, 0));
+                    mov_equipo[k].push_back(movi0);
                 }
                 else{
                     movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(2, 0));
+                    mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(1, 0));
+                    mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(3, 0));
                     mov_equipo[k].push_back(movi0);
                 }
             }
@@ -961,6 +979,10 @@ public:
                 }
             }
         }
+    }
+
+    vector<mov> generar_mov_ofensivos(LogicalBoard& t){
+
     }
 
 
