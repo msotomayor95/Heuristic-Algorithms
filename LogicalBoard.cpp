@@ -777,6 +777,14 @@ public:
         return rows;
     };
 
+    par resultado(){
+        return score;
+    }
+
+    par resultado_ant(){
+        return last_score;
+    }
+
 private:
     par score;   //puntaje del partido
     vector<Player> team_A;
@@ -816,7 +824,7 @@ public:
             dif_j = pow((equipo[i].pos_j() - arco_j), 2);
             suma_total += sqrt(dif_i + dif_j);
         }
-        suma_total = suma_total / (filas * columnas);
+        suma_total = suma_total / (filas + columnas);
         return suma_total;
     };
 
@@ -826,7 +834,7 @@ public:
             suma_total = pow((equipo[i].pos_i() - rival.first), 2) + pow((equipo[i].pos_j() - rival.second), 2);
             suma_total = sqrt(suma_total);
         }
-        suma_total = suma_total / (filas * columnas);
+        suma_total = suma_total / (filas + columnas);
         return suma_total;
     };
 
@@ -842,12 +850,22 @@ public:
                 min = distancia;
             }
         }
-        min = min / (filas * columnas);
+        min = min / (filas + columnas);
         return min;
     }
 
-    bool metimosGol(LogicalBoard& t){
+    bool golAFavor(LogicalBoard& t){
+        par res = t.resultado();
+        par res_ant = t.resultado_ant();
+        if (nombre == 'A') return (res.first > res_ant.first);
+        return (res.second > res_ant.second);
+    };
 
+    bool golContra(LogicalBoard& t){
+        par res = t.resultado();
+        par res_ant = t.resultado_ant();
+        if (nombre == 'B') return (res.first > res_ant.first);
+        return (res.second > res_ant.second);
     }
 
     float distEntreJugadores(){
@@ -859,7 +877,7 @@ public:
         //metodo que llama a la pos del team
         float esquiva = pesos[0] * (1-equipo[0].quite()) + pesos[1] * (1-equipo[1].quite()) +
                         pesos[2] * (1-equipo[2].quite());
-        puntaje_final = pesos[3] * distAlArco(t) + esquiva;
+        puntaje_final = pesos[3] * distAlArco(t) + esquiva + pesos[6] * (int)golAFavor(t);
         return puntaje_final;
     };
 
@@ -1003,9 +1021,10 @@ private:
     char nombre;
     bool izq;
     // de la posicion 0 a 2 estan los p.quite de cada jugador
-    // en la posicion 3 esta la distancia al arco
+    // en la posicion 3 esta la distancia al arco tiene que ser negativo (cuanto mas lejos peor)
     // en la posicion 4 esta la distancia al rival con pelota
     // en la posicion 5 esta la distancia a la pelota libre
+    // en la posicion 6 es el peso de hacer un gol
     vector<int> pesos;
 };
 
