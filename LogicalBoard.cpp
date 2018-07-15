@@ -821,18 +821,20 @@ public:
             arco_j = 0;
         }
         for (int i = 0; i < 3; ++i) {
-            dif_i = pow((equipo[i].pos_i() - arco_i), 2);
-            dif_j = pow((equipo[i].pos_j() - arco_j), 2);
+            dif_i = pow((ju[i].pos_i() - arco_i), 2);
+            dif_j = pow((ju[i].pos_j() - arco_j), 2);
             suma_total += sqrt(dif_i + dif_j);
         }
         suma_total = suma_total / (filas + columnas);
         return suma_total;
     };
 
-    float distARival(par& rival){
+    float distARival(LogicalBoard& t, par& rival){
         float suma_total = 0;
+        vector<Player> equipoJ;
+        equipoJ = t.getitem(nombre);
         for (int i = 0; i < 3; ++i) {
-            suma_total = pow((equipo[i].pos_i() - rival.first), 2) + pow((equipo[i].pos_j() - rival.second), 2);
+            suma_total = pow((equipoJ[i].pos_i() - rival.first), 2) + pow((equipoJ[i].pos_j() - rival.second), 2);
             suma_total = sqrt(suma_total);
         }
         suma_total = suma_total / (filas + columnas);
@@ -844,8 +846,10 @@ public:
         int p_i, p_j, min;
         p_i = t.dame_pelota_libre().posPel_i();
         p_j = t.dame_pelota_libre().posPel_j();
+        vector<Player> equipoJ;
+        equipoJ = t.getitem(nombre);
         for (int i = 0; i < 3; ++i) {
-            distancia = pow((equipo[i].pos_i() - p_i), 2) + pow((equipo[i].pos_j() - p_j), 2);
+            distancia = pow((equipoJ[i].pos_i() - p_i), 2) + pow((equipoJ[i].pos_j() - p_j), 2);
             distancia = sqrt(distancia);
             if(i == 0 || min > distancia){
                 min = distancia;
@@ -876,19 +880,23 @@ public:
     float puntuar_ofensiva(LogicalBoard& t){
         float puntaje_final = 0;
         //metodo que llama a la pos del team
-        float esquiva = pesos[0] * (1-equipo[0].quite()) + pesos[1] * (1-equipo[1].quite()) +
-                        pesos[2] * (1-equipo[2].quite());
+        vector<Player> equipoJ;
+        equipoJ = t.getitem(nombre);
+        float esquiva = pesos[0] * (1-equipoJ[0].quite()) + pesos[1] * (1-equipoJ[1].quite()) +
+                        pesos[2] * (1-equipoJ[2].quite());
         puntaje_final = pesos[3] * distAlArco(t) + esquiva + pesos[6] * (int)golAFavor(t);
         return puntaje_final;
     };
 
     float puntuar_defensiva(LogicalBoard& t){
         float puntaje_final = 0;
+        vector<Player> equipoJ;
+        equipoJ = t.getitem(nombre);
         char nom = 'A';
         if (nombre == 'A') nom = 'B';
-        float quites = pesos[0] * equipo[0].quite() + pesos[1] * equipo[1].quite() + pesos[2] * equipo[2].quite();
+        float quites = pesos[0] * equipoJ[0].quite() + pesos[1] * equipoJ[1].quite() + pesos[2] * equipoJ[2].quite();
         auto p = t.jugador_con_pelota(nom);
-        puntaje_final = pesos[4] * distARival(p) + quites + pesos[7] * (int)golContra(t);
+        puntaje_final = pesos[4] * distARival(t, p) + quites + pesos[7] * (int)golContra(t);
         return puntaje_final;
     };
 
@@ -904,11 +912,11 @@ public:
         if(t.pelota_libre()){
             //auto p = make_pair(t.dame_pelota_libre().posPel_i(), t.dame_pelota_libre().posPel_j());
             //puntaje_final = puntuar_libre(p);
-            mejor_jugada = generar_mov_libres(t);
+ //           mejor_jugada = generar_mov_libres(t);
         }
         else if(t.posesion(nombre)){
             // puntaje_final = puntuar_ofensiva(t); despues lo uso ?
-            mejor_jugada = generar_mov_ofensivos(t);
+  //          mejor_jugada = generar_mov_ofensivos(t);
         }
         else{
             //puntaje_final = puntuar_defensiva(t);
@@ -920,94 +928,96 @@ public:
         int ball_i = t.dame_pelota_libre().posPel_i();
         int ball_j = t.dame_pelota_libre().posPel_j();
         int i, j, resta;
+        vector<Player> equipoJ;
+        equipoJ = t.getitem(nombre);
         //tengo que hacer pelota menos jugador
         vector<vector<mov>> mov_equipo(3);
         mov movi0;
         for (int k = 0; k < 3; ++k) {
-            i = equipo[k].pos_i();
-            j = equipo[k].pos_j();
+            i = equipoJ[k].pos_i();
+            j = equipoJ[k].pos_j();
             i = ball_i - i;
             j = ball_j - j;
-            movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(0, 0));
+            movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(0, 0));
             mov_equipo[k].push_back(movi0);
             if (i == 0){
                 if(j > 0){
-                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(4, 0));
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(4, 0));
                     mov_equipo[k].push_back(movi0);
-                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(3, 0));
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(3, 0));
                     mov_equipo[k].push_back(movi0);
-                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(5, 0));
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(5, 0));
                     mov_equipo[k].push_back(movi0);
                     //AGREGAR LOS MOVIMIENTOS DIAGONALES EN ESTOS DE I O J IGUAL A 0
                 }
                 else{
-                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(8, 0));
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(8, 0));
                     mov_equipo[k].push_back(movi0);
-                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(1, 0));
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(1, 0));
                     mov_equipo[k].push_back(movi0);
-                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(7, 0));
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(7, 0));
                     mov_equipo[k].push_back(movi0);
                 }
             }
             else if(j == 0){
                 if(i > 0){
-                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(6, 0));
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(6, 0));
                     mov_equipo[k].push_back(movi0);
-                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(7, 0));
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(7, 0));
                     mov_equipo[k].push_back(movi0);
-                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(5, 0));
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(5, 0));
                     mov_equipo[k].push_back(movi0);
                 }
                 else{
-                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(2, 0));
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(2, 0));
                     mov_equipo[k].push_back(movi0);
-                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(1, 0));
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(1, 0));
                     mov_equipo[k].push_back(movi0);
-                    movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(3, 0));
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(3, 0));
                     mov_equipo[k].push_back(movi0);
                 }
             }
             else{
                 if(i > 0){
                     if(j > 0){
-                        movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(4, 0));
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(4, 0));
                         mov_equipo[k].push_back(movi0);
-                        movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(5, 0));
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(5, 0));
                         mov_equipo[k].push_back(movi0);
-                        movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(6, 0));
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(6, 0));
                         mov_equipo[k].push_back(movi0);
                     }
                     else{
-                        movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(6, 0));
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(6, 0));
                         mov_equipo[k].push_back(movi0);
-                        movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(7, 0));
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(7, 0));
                         mov_equipo[k].push_back(movi0);
-                        movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(8, 0));
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(8, 0));
                         mov_equipo[k].push_back(movi0);
                     }
                 }
                 else{
                     if(j > 0){
-                        movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(2, 0));
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(2, 0));
                         mov_equipo[k].push_back(movi0);
-                        movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(3, 0));
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(3, 0));
                         mov_equipo[k].push_back(movi0);
-                        movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(6, 0));
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(6, 0));
                         mov_equipo[k].push_back(movi0);
                     }
                     else{
-                        movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(1, 0));
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(1, 0));
                         mov_equipo[k].push_back(movi0);
-                        movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(2, 0));
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(2, 0));
                         mov_equipo[k].push_back(movi0);
-                        movi0 = make_tuple(equipo[k].p_id(), "MOVIMIENTO", make_pair(8, 0));
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(8, 0));
                         mov_equipo[k].push_back(movi0);
                     }
                 }
             }
         }
-        vector<vector<mov>> v = crearMovValido(t, mov_equipo);
-        return v;
+ //       vector<vector<mov>> v = crearMovValido(t, mov_equipo);
+//        return v;
     }
 
 
@@ -1063,14 +1073,19 @@ public:
                 }
             }
         }
-        vector<vector<mov>> v = crearMovEquipo(t, mov_equipo);
-        return v;
+     //   vector<vector<mov>> v = crearMovValido(t, mov_equipo);
+   //     return v;
+    }
+
+    vector<vector<mov>> generar_mov_defensivos(LogicalBoard& t){
+        vector<Player> jug_rival;
+        if(nombre == 'A'){}
+       // vector jug_rival = t.getitem('');
     }
 
 
 private:
     //podria cambiar la distancia de cada uno
-    vector<Player> equipo;
     int filas;
     int columnas;
     int turnos;
