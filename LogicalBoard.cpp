@@ -836,12 +836,14 @@ public:
     };
 
     float distARival(LogicalBoard& t, par& rival){
-        float suma_total = 0;
+        float tmp = 0;
+        float min = 0;
         vector<Player> equipoJ;
         equipoJ = t.getitem(nombre);
         for (int i = 0; i < 3; ++i) {
-            suma_total = pow((equipoJ[i].pos_i() - rival.first), 2) + pow((equipoJ[i].pos_j() - rival.second), 2);
-            suma_total = sqrt(suma_total);
+            tmp = pow((equipoJ[i].pos_i() - rival.first), 2) + pow((equipoJ[i].pos_j() - rival.second), 2);
+            tmp = sqrt(tmp);
+            if(i == 0 || tmp < min) min _= tmp;
         }
         suma_total = suma_total / (filas + columnas);
         return suma_total;
@@ -949,7 +951,7 @@ public:
 
         float quites = pesos[0] * equipoJ[0].quite() + pesos[1] * equipoJ[1].quite() + pesos[2] * equipoJ[2].quite();
         auto p = t.jugador_con_pelota(rival);
-        if(t.posesion(rival)) puntaje_final += pesos[8] * distARival(t, p);
+        puntaje_final += pesos[8] * distARival(t, p);
         puntaje_final += quites + pesos[7] * (int)golContra(t);
         return puntaje_final;
     };
