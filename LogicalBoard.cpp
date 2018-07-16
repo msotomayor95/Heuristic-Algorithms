@@ -807,6 +807,12 @@ private:
 
 class Team{
 public:
+
+    Team(int filas, int columnas, char nombre, vector<int> pesos, int turnos): filas(filas), columnas(columnas),
+    nombre(nombre), pesos(pesos), turnos(turnos){
+        izq = nombre == 'A';
+    }
+
     float distAlArco(LogicalBoard& t){
         float suma_total = 0;
         int dif_i, dif_j;
@@ -915,8 +921,9 @@ public:
         equipoJ = t.getitem(nombre);
         float esquiva = pesos[0] * (1-equipoJ[0].quite()) + pesos[1] * (1-equipoJ[1].quite()) +
                         pesos[2] * (1-equipoJ[2].quite());
-        puntaje_final = pesos[3] * distAlArco(t) + esquiva + pesos[6] * (int)golAFavor(t) + pesos[8] * anguloDeTiro(t) +
-                        pesos[9] * yendoAlArco(t);
+        if(t.posesion(nombre)) puntaje_final += pesos[3] * distAlArco(t) + pesos[4] * anguloDeTiro(t);
+        if(t.pelota_libre()) puntaje_final += pesos[9] * yendoAlArco(t) ;
+        puntaje_final +=  esquiva + pesos[6] * (int)golAFavor(t);
         return puntaje_final;
     };
 
@@ -928,32 +935,39 @@ public:
         if (nombre == 'A') nom = 'B';
         float quites = pesos[0] * equipoJ[0].quite() + pesos[1] * equipoJ[1].quite() + pesos[2] * equipoJ[2].quite();
         auto p = t.jugador_con_pelota(nom);
-        puntaje_final = pesos[4] * distARival(t, p) + quites + pesos[7] * (int)golContra(t);
+        if(t.posesion(nom)) puntaje_final += pesos[8] * distARival(t, p);
+        puntaje_final += quites + pesos[7] * (int)golContra(t);
         return puntaje_final;
     };
 
     float puntuar_libre(LogicalBoard& t ){
         float puntaje_final = 0;
-        puntaje_final = pesos[5] * distMinAPelota(t);
+        char nom = 'A';
+        if (nombre == 'A') nom = 'B';
+        //HACER SI el rival TIENE EL RIVAL PUNTAJE NEGATIVO
+        if(t.pelota_libre()) puntaje_final = pesos[5] * distMinAPelota(t);
+        //ITERAR EN LOS JUGADORES, DEVOLVER LAS POSICONES Y FIJARSE SI ESTA CON EL RIVAL CON PELOTA
+        if(t.posesion(nom)) puntaje_final += pesos[10];
         return puntaje_final;
     };
 
-    float tipo_de_movimientos(LogicalBoard& t){
-        //equipo = tablero.posequipo;
+    vector<mov> generarJugada(LogicalBoard& t){
+        vector<vector<mov>> jugadas;
         vector<mov> mejor_jugada;
         if(t.pelota_libre()){
-            //auto p = make_pair(t.dame_pelota_libre().posPel_i(), t.dame_pelota_libre().posPel_j());
-            //puntaje_final = puntuar_libre(p);
- //           mejor_jugada = generar_mov_libres(t);
+            jugadas = generar_mov_libres(t);
+            mejor_jugada = elegirMov(t, jugadas, 0);
+ //
         }
         else if(t.posesion(nombre)){
-            // puntaje_final = puntuar_ofensiva(t); despues lo uso ?
-  //          mejor_jugada = generar_mov_ofensivos(t);
+            jugadas = generar_mov_ofensivos(t);
+            mejor_jugada = elegirMov(t, jugadas, 1);
         }
         else{
-            //puntaje_final = puntuar_defensiva(t);
-            //mejor_jugada = generar_mov_defensivo();
+            jugadas = generar_mov_defensivos(t);
+            mejor_jugada = elegirMov(t, jugadas, 2);
         }
+        return mejor_jugada;
     }
 
     vector<vector<mov>> generar_mov_libres(LogicalBoard& t){
@@ -1048,8 +1062,7 @@ public:
                 }
             }
         }
-        vector<vector<mov>> v = crearMovValido(t, mov_equipo);
-        return v;
+        return crearMovValido(t, mov_equipo);
     }
 
     vector<vector<mov>> generar_mov_ofensivos(LogicalBoard& t){
@@ -1103,8 +1116,7 @@ public:
                 }
             }
         }
-        vector<vector<mov>> v = crearMovValido(t, mov_equipo);
-        return v;
+        return crearMovValido(t, mov_equipo);
     }
 
     vector<vector<mov>> generar_mov_defensivos(LogicalBoard& t){
@@ -1198,8 +1210,7 @@ public:
                 }
             }
         }
-        vector<vector<mov>> v = crearMovValido(t, mov_equipo);
-        return v;
+        return crearMovValido(t, mov_equipo);
     }
 
     vector<vector<mov>> crearMovValido(LogicalBoard &t, vector<vector<mov>> &ma){
@@ -1207,6 +1218,7 @@ public:
         for (int i = 0; i < ma.size(); ++i) {
             reserva *= ma[i].size();
         }
+        vector<Player> nosotros = t.getitem(nombre);
         vector<vector<mov>> v(reserva);
         vector<mov> movi(3);
         for (int i = 0; i < ma[0].size(); ++i) {
@@ -1215,10 +1227,62 @@ public:
                     movi.push_back(ma[0][i]);
                     movi.push_back(ma[1][k]);
                     movi.push_back(ma[2][l]);
+                    if(t.isValidTeamMove(nosotros, movi)) v.push_back(movi);
+                    movi.clear();
                 }
             }
         }
+        return v;
     }
+
+    vector<mov> elegirMov(LogicalBoard &t, vector<vector<mov>> &v, int eleccion){
+        //if(eleccion == 0)
+        char nom;
+        nombre == 'A'? nom ='B': nom = 'A';
+        auto rivales = t.getitem(nom);
+        mov m0;
+        vector<mov> parado;
+        for (int j = 0; j < 3; ++j) {
+            m0 = make_tuple(rivales[j].p_id(), "MOVIMIENTO", make_pair(0, 0));
+            parado.push_back(m0);
+        }
+
+        pair<float, int> max;
+        float tmp;
+        if(nom == 'A'){
+            for (int i = 0; i < v.size(); ++i) {
+                t.makeMove(parado, v[i]);
+                tmp = puntuarTablero(t, eleccion);
+                if (i == 0 || tmp > max.first){
+                    max.first = tmp;
+                    max.second = i;
+                }
+                t.undoMove();
+            }
+        }
+        else{
+                for (int i = 0; i < v.size(); ++i) {
+                    t.makeMove(v[i], parado);
+                    tmp = puntuarTablero(t, eleccion);
+                    if (i == 0 || tmp > max.first){
+                        max.first = tmp;
+                        max.second = i;
+                    }
+                    t.undoMove();
+                }
+            }
+        return v[max.second];
+    }
+
+float puntuarTablero(LogicalBoard &t, int eleccion){
+    if(eleccion == 0) {
+        return puntuar_libre(t);
+    }else if(eleccion == 1){
+        return puntuar_ofensiva(t);
+    }else{
+        return puntuar_defensiva(t);
+    }
+}
 
 private:
     //podria cambiar la distancia de cada uno
@@ -1229,11 +1293,13 @@ private:
     bool izq;
     // de la posicion 0 a 2 estan los p.quite de cada jugador
     // en la posicion 3 esta la distancia al arco tiene que ser negativo (cuanto mas lejos peor)
-    // en la posicion 4 esta la distancia al rival con pelota
+    // en la posicion 4 es el peso del angulo del tiro del jugador con la pelota.
     // en la posicion 5 esta la distancia a la pelota libre, (negativo).
     // en la posicion 6 es el peso de hacer un gol
     // en la posicion 7 es el peso de ser goleado (tiene que ser negativo)
-    // en la posicion 8 es el peso del angulo del tiro del jugador con la pelota.
+    // en la posicion 8 esta la distancia al rival con pelota
+    // en la posicion 9 voy al arco teniendo la pelota
+    // en la posicion 10 punto si tiene o no la pelota el rival en puntuar libre, tiene que ser valor negativo
     vector<int> pesos;
 };
 
