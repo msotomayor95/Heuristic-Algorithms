@@ -893,6 +893,19 @@ public:
         return 0;
     }
 
+    int rivalEnTrayectoria(LogicalBoard& t){
+        vector<par> trayectoria = t.dame_pelota_libre().trajectory();
+
+        for (auto i = 0; i < 3; i++){
+            int i_rival = t.getitem(nombre == 'A'? 'B':'A')[i].pos_i();
+            int j_rival = t.getitem(nombre == 'A'? 'B':'A')[i].pos_j();
+            par rival(i_rival, j_rival);
+            if(pertenecePar(rival, trayectoria)) return 1;
+        }
+
+        return 0;
+    }
+
     int anguloDeTiro(LogicalBoard& t){
         if (t.pelota_libre()) return 0;
         par pos = t.jugador_con_pelota(nombre);
@@ -921,8 +934,7 @@ public:
         equipoJ = t.getitem(nombre);
         float esquiva = pesos[0] * (1-equipoJ[0].quite()) + pesos[1] * (1-equipoJ[1].quite()) +
                         pesos[2] * (1-equipoJ[2].quite());
-        if(t.posesion(nombre)) puntaje_final += pesos[3] * distAlArco(t) + pesos[4] * anguloDeTiro(t);
-        if(t.pelota_libre()) puntaje_final += pesos[9] * yendoAlArco(t) ;
+        puntaje_final += pesos[3] * distAlArco(t) + pesos[4] * anguloDeTiro(t);
         puntaje_final +=  esquiva + pesos[6] * (int)golAFavor(t);
         return puntaje_final;
     };
@@ -942,12 +954,7 @@ public:
 
     float puntuar_libre(LogicalBoard& t ){
         float puntaje_final = 0;
-        char nom = 'A';
-        if (nombre == 'A') nom = 'B';
-        //HACER SI el rival TIENE EL RIVAL PUNTAJE NEGATIVO
-        if(t.pelota_libre()) puntaje_final = pesos[5] * distMinAPelota(t);
-        //ITERAR EN LOS JUGADORES, DEVOLVER LAS POSICONES Y FIJARSE SI ESTA CON EL RIVAL CON PELOTA
-        if(t.posesion(nom)) puntaje_final += pesos[10];
+        puntaje_final = pesos[5] * distMinAPelota(t) + pesos[9] * yendoAlArco(t) + pesos[10] * rivalEnTrayectoria(t);
         return puntaje_final;
     };
 
