@@ -843,7 +843,7 @@ public:
         for (int i = 0; i < 3; ++i) {
             tmp = pow((equipoJ[i].pos_i() - rival.first), 2) + pow((equipoJ[i].pos_j() - rival.second), 2);
             tmp = sqrt(tmp);
-            if(i == 0 || tmp < min) min _= tmp;
+            if(i == 0 || tmp < min) min = tmp;
         }
         min = min / (filas + columnas);
         return min;
@@ -895,14 +895,18 @@ public:
         return 0;
     }
 
-    int rivalEnTrayectoria(LogicalBoard& t){
+    int equipoEnTrayectoria(LogicalBoard& t){
         vector<par> trayectoria = t.dame_pelota_libre().trajectory();
 
-        for (auto i = 0; i < 3; i++){
-            int i_rival = t.getitem(nombre == 'A'? 'B':'A')[i].pos_i();
-            int j_rival = t.getitem(nombre == 'A'? 'B':'A')[i].pos_j();
-            par rival(i_rival, j_rival);
-            if(pertenecePar(rival, trayectoria)) return 1;
+        char rival = nombre == 'A'? 'B' : 'A';
+        int i_ju, j_ju, i_ri, j_ri;
+        for (auto i = 0; i < trayectoria.size(); i++){
+            int i_ju = t.getitem(nombre)[i].pos_i();
+            int j_ju = t.getitem(nombre)[i].pos_j();
+            if (trayectoria[i].first == i_ju && trayectoria[i].second == j_ju) return 1;
+            int i_ri = t.getitem(rival)[i].pos_i();
+            int j_ri = t.getitem(rival)[i].pos_j();
+            if (trayectoria[i].first == i_ri && trayectoria[i].second == j_ri) return 0;
         }
 
         return 0;
@@ -937,7 +941,7 @@ public:
         float esquiva = pesos[0] * (1-equipoJ[0].quite()) + pesos[1] * (1-equipoJ[1].quite()) +
                         pesos[2] * (1-equipoJ[2].quite());
         puntaje_final += pesos[3] * distAlArco(t) + pesos[4] * anguloDeTiro(t);
-        puntaje_final +=  esquiva + pesos[6] * (int)golAFavor(t);
+        puntaje_final +=  esquiva  + pesos[7] * (int)golContra(t);
         return puntaje_final;
     };
 
@@ -948,17 +952,19 @@ public:
 
         equipoJ = t.getitem(nombre);
         char rival = nombre? 'A':'B';
-
+        //CAMBIAR EL GOL EN CONTRA A LA OFENSIVA, PONER EN DEFENSIVA EL DE GOL A FAVOR
+        //SI METI GOL, EN EL PROXIMO TABLERO MI RIVAL TIENE LA PELOTA
+        //SI ME METIO GOL, EN EL PROXIMO TABLERO YO TENGO LA PELOTA
         float quites = pesos[0] * equipoJ[0].quite() + pesos[1] * equipoJ[1].quite() + pesos[2] * equipoJ[2].quite();
         auto p = t.jugador_con_pelota(rival);
         puntaje_final += pesos[8] * distARival(t, p);
-        puntaje_final += quites + pesos[7] * (int)golContra(t);
+        puntaje_final += quites + pesos[6] * (int)golAFavor(t);
         return puntaje_final;
     };
 
     float puntuar_libre(LogicalBoard& t ){
         float puntaje_final = 0;
-        puntaje_final = pesos[5] * distMinAPelota(t) + pesos[9] * yendoAlArco(t) + pesos[10] * rivalEnTrayectoria(t);
+        puntaje_final = pesos[5] * distMinAPelota(t) + pesos[9] * yendoAlArco(t) + pesos[10] * equipoEnTrayectoria(t);
         return puntaje_final;
     };
 
