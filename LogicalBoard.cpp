@@ -133,7 +133,7 @@ public:
         return res;
     }
 
-    vector<par> trajectory(){   //Me da el vector conteniendo la trayectoria de la pelota para un movimiento dado
+    vector<par>& trajectory(){   //Me da el vector conteniendo la trayectoria de la pelota para un movimiento dado
         par move = moves[movement.first];
         int steps = 2*movement.second;
         vector<par> trayectoria;
@@ -877,6 +877,36 @@ public:
 
     }
 
+    int yendoAlArco(LogicalBoard& t){
+        Ball bocha = t.dame_pelota_libre();
+        auto arco_rival = nombre == 'A'? t.getGoal('B'):t.getGoal('A');
+        for (auto i = 0; i < 3; i++){
+            if(pertenecePar(arco_rival[i], bocha.trajectory())) return 1;
+        }
+        return 0;
+    }
+
+    int anguloDeTiro(LogicalBoard& t){
+        if (t.pelota_libre()) return 0;
+        par pos = t.jugador_con_pelota(nombre);
+
+        char rival = nombre == 'A'? 'B':'A';
+        int cant_max_pasos = filas; // tengo M filas y solo se me permite patear con fuerza M/2 (la pelota recorre
+        // como mucho una distancia M porque ).
+
+        bool estoy_en_angulo = pos.first == t.getGoal(rival)[0].first ||
+                               pos.first == t.getGoal(rival)[1].first ||
+                               pos.first == t.getGoal(rival)[2].first;
+
+        if (estoy_en_angulo && abs(pos.second - t.getGoal(rival)[0].second) <= cant_max_pasos) return 1;
+
+        estoy_en_angulo |= abs(t.getGoal(rival)[0].first - pos.first) == abs(t.getGoal(rival)[0].second - pos.second) ||
+                           abs(t.getGoal(rival)[1].first - pos.first) == abs(t.getGoal(rival)[1].second - pos.second) ||
+                           abs(t.getGoal(rival)[2].first - pos.first) == abs(t.getGoal(rival)[2].second - pos.second);
+
+        return int(estoy_en_angulo);
+    }
+
     float puntuar_ofensiva(LogicalBoard& t){
         float puntaje_final = 0;
         //metodo que llama a la pos del team
@@ -884,7 +914,8 @@ public:
         equipoJ = t.getitem(nombre);
         float esquiva = pesos[0] * (1-equipoJ[0].quite()) + pesos[1] * (1-equipoJ[1].quite()) +
                         pesos[2] * (1-equipoJ[2].quite());
-        puntaje_final = pesos[3] * distAlArco(t) + esquiva + pesos[6] * (int)golAFavor(t);
+        puntaje_final = pesos[3] * distAlArco(t) + esquiva + pesos[6] * (int)golAFavor(t) + pesos[8] * anguloDeTiro(t) +
+                        pesos[9] * yendoAlArco(t);
         return puntaje_final;
     };
 
@@ -1019,8 +1050,6 @@ public:
  //       vector<vector<mov>> v = crearMovValido(t, mov_equipo);
 //        return v;
     }
-
-
 
     vector<vector<mov>> generar_mov_ofensivos(LogicalBoard& t){
         par arc_rival = t.getGoal('A')[1];
@@ -1181,9 +1210,10 @@ private:
     // de la posicion 0 a 2 estan los p.quite de cada jugador
     // en la posicion 3 esta la distancia al arco tiene que ser negativo (cuanto mas lejos peor)
     // en la posicion 4 esta la distancia al rival con pelota
-    // en la posicion 5 esta la distancia a la pelota libre
+    // en la posicion 5 esta la distancia a la pelota libre, (negativo).
     // en la posicion 6 es el peso de hacer un gol
-    // en la posicion 7 es el peso de ser goleado tiene que ser negativo
+    // en la posicion 7 es el peso de ser goleado (tiene que ser negativo)
+    // en la posicion 8 es el peso del angulo del tiro del jugador con la pelota.
     vector<int> pesos;
 };
 
