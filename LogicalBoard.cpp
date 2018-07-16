@@ -873,8 +873,8 @@ public:
         return (res.second > res_ant.second);
     }
 
-    float distEntreJugadores(){
-
+    float distEntreJugadores(LogicalBoard& t){
+        
     }
 
     int yendoAlArco(LogicalBoard& t){
