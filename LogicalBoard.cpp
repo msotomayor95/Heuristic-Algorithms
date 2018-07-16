@@ -845,8 +845,8 @@ public:
             tmp = sqrt(tmp);
             if(i == 0 || tmp < min) min _= tmp;
         }
-        suma_total = suma_total / (filas + columnas);
-        return suma_total;
+        min = min / (filas + columnas);
+        return min;
     };
 
     float distMinAPelota(LogicalBoard& t){ // toma la distancia minima de un jugador a la pelota
@@ -1306,7 +1306,7 @@ private:
     // en la posicion 5 esta la distancia a la pelota libre, (negativo).
     // en la posicion 6 es el peso de hacer un gol
     // en la posicion 7 es el peso de ser goleado (tiene que ser negativo)
-    // en la posicion 8 esta la distancia al rival con pelota
+    // en la posicion 8 esta la distancia al rival con pelota NEGATIVO
     // en la posicion 9 voy al arco teniendo la pelota
     // en la posicion 10 punto si tiene o no la pelota el rival en puntuar libre, tiene que ser valor negativo
     vector<int> pesos;
