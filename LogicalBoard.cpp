@@ -942,13 +942,15 @@ public:
     };
 
     float puntuar_defensiva(LogicalBoard& t){
+
         float puntaje_final = 0;
         vector<Player> equipoJ;
+
         equipoJ = t.getitem(nombre);
-        char nom = 'A';
-        if (nombre == 'A') nom = 'B';
+        char rival = nombre? 'A':'B';
+
         float quites = pesos[0] * equipoJ[0].quite() + pesos[1] * equipoJ[1].quite() + pesos[2] * equipoJ[2].quite();
-        auto p = t.jugador_con_pelota(nom);
+        auto p = t.jugador_con_pelota(rival);
         puntaje_final += pesos[8] * distARival(t, p);
         puntaje_final += quites + pesos[7] * (int)golContra(t);
         return puntaje_final;
