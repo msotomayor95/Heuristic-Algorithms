@@ -1078,9 +1078,96 @@ public:
     }
 
     vector<vector<mov>> generar_mov_defensivos(LogicalBoard& t){
-        vector<Player> jug_rival;
-        if(nombre == 'A'){}
-       // vector jug_rival = t.getitem('');
+        par riv_ij, diff;
+        nombre == 'A'? riv_ij = t.jugador_con_pelota('B') : riv_ij = t.jugador_con_pelota('A');
+        vector<vector<mov>> mov_equipo(3);
+        mov movi0;
+        vector<Player> equipoJ;
+        equipoJ = t.getitem(nombre);
+//        vector<Player> ju_rival = t.getitem('A');
+//        if(nombre == 'A') ju_rival = t.getitem('B');
+//        int i =0;
+//        for (i; !ju_rival[i].tienePelota(); ++i){}
+        for (int k = 0; k < 3; ++k) {
+            movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(0, 0));
+            mov_equipo[k].push_back(movi0);
+            diff = make_pair(riv_ij.first - equipoJ[k].pos_i(), riv_ij.second - equipoJ[k].pos_j());
+            if (diff.first == 0){
+                if(diff.second > 0){
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(4, 0));
+                    mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(3, 0));
+                    mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(5, 0));
+                    mov_equipo[k].push_back(movi0);
+                    //AGREGAR LOS MOVIMIENTOS DIAGONALES EN ESTOS DE I O J IGUAL A 0
+                }
+                else{
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(8, 0));
+                    mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(1, 0));
+                    mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(7, 0));
+                    mov_equipo[k].push_back(movi0);
+                }
+            }
+            else if(diff.second == 0){
+                if(diff.first > 0){
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(6, 0));
+                    mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(7, 0));
+                    mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(5, 0));
+                    mov_equipo[k].push_back(movi0);
+                }
+                else{
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(2, 0));
+                    mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(1, 0));
+                    mov_equipo[k].push_back(movi0);
+                    movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(3, 0));
+                    mov_equipo[k].push_back(movi0);
+                }
+            }
+            else{
+                if(diff.first > 0){
+                    if(diff.second > 0){
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(4, 0));
+                        mov_equipo[k].push_back(movi0);
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(5, 0));
+                        mov_equipo[k].push_back(movi0);
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(6, 0));
+                        mov_equipo[k].push_back(movi0);
+                    }
+                    else{
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(6, 0));
+                        mov_equipo[k].push_back(movi0);
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(7, 0));
+                        mov_equipo[k].push_back(movi0);
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(8, 0));
+                        mov_equipo[k].push_back(movi0);
+                    }
+                }
+                else{
+                    if(diff.second > 0){
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(2, 0));
+                        mov_equipo[k].push_back(movi0);
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(3, 0));
+                        mov_equipo[k].push_back(movi0);
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(6, 0));
+                        mov_equipo[k].push_back(movi0);
+                    }
+                    else{
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(1, 0));
+                        mov_equipo[k].push_back(movi0);
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(2, 0));
+                        mov_equipo[k].push_back(movi0);
+                        movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(8, 0));
+                        mov_equipo[k].push_back(movi0);
+                    }
+                }
+            }
+        }
     }
 
 
