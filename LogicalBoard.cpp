@@ -843,7 +843,7 @@ public:
         for (int i = 0; i < 3; ++i) {
             tmp = pow((equipoJ[i].pos_i() - rival.first), 2) + pow((equipoJ[i].pos_j() - rival.second), 2);
             tmp = sqrt(tmp);
-            if(i == 0 || tmp < min) min _= tmp;
+            if(i == 0 || tmp < min) min = tmp;
         }
         min = min / (filas + columnas);
         return min;
