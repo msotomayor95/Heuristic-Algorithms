@@ -884,7 +884,7 @@ public:
         equipoJ = t.getitem(nombre);
         float esquiva = pesos[0] * (1-equipoJ[0].quite()) + pesos[1] * (1-equipoJ[1].quite()) +
                         pesos[2] * (1-equipoJ[2].quite());
-        puntaje_final = pesos[3] * distAlArco(t) + esquiva + pesos[6] * (int)golAFavor(t);
+        puntaje_final = pesos[3] * distAlArco(t) + esquiva + pesos[6] * (int)golAFavor(t)+ peloyendoalarco;
         return puntaje_final;
     };
 
