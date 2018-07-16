@@ -133,7 +133,7 @@ public:
         return res;
     }
 
-    vector<par>& trajectory(){   //Me da el vector conteniendo la trayectoria de la pelota para un movimiento dado
+    vector<par> trajectory(){   //Me da el vector conteniendo la trayectoria de la pelota para un movimiento dado
         par move = moves[movement.first];
         int steps = 2*movement.second;
         vector<par> trayectoria;
@@ -878,10 +878,11 @@ public:
     }
 
     int yendoAlArco(LogicalBoard& t){
-        Ball bocha = t.dame_pelota_libre();
+        vector<par> trayectoria = t.dame_pelota_libre().trajectory();
+
         auto arco_rival = nombre == 'A'? t.getGoal('B'):t.getGoal('A');
         for (auto i = 0; i < 3; i++){
-            if(pertenecePar(arco_rival[i], bocha.trajectory())) return 1;
+            if(pertenecePar(arco_rival[i], trayectoria)) return 1;
         }
         return 0;
     }
@@ -1047,8 +1048,8 @@ public:
                 }
             }
         }
- //       vector<vector<mov>> v = crearMovValido(t, mov_equipo);
-//        return v;
+        vector<vector<mov>> v = crearMovValido(t, mov_equipo);
+        return v;
     }
 
     vector<vector<mov>> generar_mov_ofensivos(LogicalBoard& t){
@@ -1102,8 +1103,8 @@ public:
                 }
             }
         }
-     //   vector<vector<mov>> v = crearMovValido(t, mov_equipo);
-   //     return v;
+        vector<vector<mov>> v = crearMovValido(t, mov_equipo);
+        return v;
     }
 
     vector<vector<mov>> generar_mov_defensivos(LogicalBoard& t){
@@ -1197,8 +1198,27 @@ public:
                 }
             }
         }
+        vector<vector<mov>> v = crearMovValido(t, mov_equipo);
+        return v;
     }
 
+    vector<vector<mov>> crearMovValido(LogicalBoard &t, vector<vector<mov>> &ma){
+        int reserva = 1;
+        for (int i = 0; i < ma.size(); ++i) {
+            reserva *= ma[i].size();
+        }
+        vector<vector<mov>> v(reserva);
+        vector<mov> movi(3);
+        for (int i = 0; i < ma[0].size(); ++i) {
+            for (int k = 0; k < ma[1].size(); ++k) {
+                for (int l = 0; l < ma[2].size(); ++l) {
+                    movi.push_back(ma[0][i]);
+                    movi.push_back(ma[1][k]);
+                    movi.push_back(ma[2][l]);
+                }
+            }
+        }
+    }
 
 private:
     //podria cambiar la distancia de cada uno
