@@ -1347,9 +1347,8 @@ private:
     vector<float> pesos;
 };
 
-vector<vector<float>> generar_vecinos_ofensivos(Team &original){
+vector<float> campOff(Team &original, LogicalBoard &t){
     vector<vector<float>> pv(6);
-    vector<vector<float>> vecinos;
     vector<float> single;
     float k;
     for (int i = 0; i < 6; ++i) {
@@ -1380,28 +1379,30 @@ vector<vector<float>> generar_vecinos_ofensivos(Team &original){
                             for (int k1 = 6; k1 < 11; ++k1) {
                                 single.push_back(original.damePesos()[k1]);
                             }
+
+                            Team b(5, 10, 'B', single, original.dameTurnos());
+                            int cantGanadas = 0;
+                            par res;
                             for (int l1 = 0; l1 < 20; ++l1) {
-                                Team b(5, 10, 'B', single, original.dameTurnos());
+                                res = jugar(original, b, t);
+                                if(res.first < res.second) cantGanadas++;
                             }
-                            vecinos.push_back(single);
-                            single.clear();
+                            meGanaron = cantGanadas >= 15;
                         }
                     }
                 }
             }
         }
     }
-    return vecinos;
+    return single;
 }
 
-Team compLocal(Team& inicial){
+Team compLocal(Team& inicial, LogicalBoard &t){
     int i = 0;
-    vector<vector<float>> vecinos = generar_vecinos_ofensivos(inicial);
+    inicial.damePesos() = campOff(inicial, t);
     ///aca van a jugar
     //aca me gano uno
-    inicial.damePesos() = vecinos[i];
-    vecinos.clear();
-    vecinos = generar_vecinos_defensivos(inicial);
+
 }
 
 
