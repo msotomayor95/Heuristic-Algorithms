@@ -531,32 +531,69 @@ public:
         return result;
     }
 
-    char updateScore(){ //Devuelve el equipo goleado
 
-        Ball ball = free_ball;
 
-        if(!hayPelotaLibre){
-            for(uint i=0; i<team_A.size(); i++){
-                if(team_A[i].tienePelota()){
-                    ball =  team_A[i].pelota();
-                }
-                if(team_B[i].tienePelota()){
-                    ball =  team_B[i].pelota();
-                }
-            }
-        }
-        par pos_Pelota = make_pair(ball.posPel_i(), ball.posPel_j());
-        if(pertenecePar(pos_Pelota, goal_A)){
-            score = make_pair(score.first, score.second +1);
-            return 'A'; 										//Devuelve el equipo goleado
-        }else if(pertenecePar(pos_Pelota, goal_B)){
-            score = make_pair(score.first+1, score.second);
-            return 'B';
-        }
+//Asumo que las posiciones dentro de la cancha son validas y que siempre empieza el equipo llamado A a la izquierda de la cancha
+void startingPositions(vector<par> position_A, vector<par> position_B, char starting){
+		//reseteo el estado anterior, empieza de cero
+		hayEstadoAnteriorBall = false;
+		hayEstadoAnteriorPlayer = false;
+		posicionesIniciales_A = position_A;
+		posicionesIniciales_B = position_B;
+		// Saco la pelota del juego y pongo a los jugadores en su lugar
+		for(uint i=0; i<team_A.size(); i++){
+			team_A[i].sinPelota();
+			team_B[i].sinPelota();
 
-        return 'N';    //No hubo gol (***) es un reemplazo de None
+			team_A[i].posicionarJugador(position_A[i]);
+			team_B[i].posicionarJugador(position_B[i]);
 
-    }
+		}
+		hayPelotaLibre = false;
+
+		// le doy la pelota al jugador que saca y lo pongo en el centro; despues de un gol si el equipo B fue goleado, tiene la posesion de la pelota
+		par pos_inicial_A = make_pair((int)(rows/2), (columns/2) - 1);
+		par pos_inicial_B = make_pair((int)(rows/2), (columns/2));
+		Ball b;
+		if(starting == 'A'){
+			team_A[0].posicionarJugador(pos_inicial_A);
+			team_A[0].takeBall(b);
+
+		}else if(starting == 'B'){
+			team_B[0].posicionarJugador(pos_inicial_B);
+			team_B[0].takeBall(b);
+		}
+}
+
+char updateScore(){ //Devuelve el equipo goleado
+
+	Ball ball = free_ball;
+	char res;
+	if(!hayPelotaLibre){
+		for(uint i=0; i<team_A.size(); i++){
+			if(team_A[i].tienePelota()){
+				ball =  team_A[i].pelota();
+			}
+			if(team_B[i].tienePelota()){
+				ball =  team_B[i].pelota();
+			}
+		}
+	}
+	par pos_Pelota = make_pair(ball.posPel_i(), ball.posPel_j());
+	if(pertenecePar(pos_Pelota, goal_A)){
+		score = make_pair(score.first, score.second +1);
+		res = 'A';								//Devuelve el equipo goleado
+		startingPositions(posicionesIniciales_A, posicionesIniciales_B, res); 										
+	}else if(pertenecePar(pos_Pelota, goal_B)){
+		score = make_pair(score.first+1, score.second);
+		res = 'B';
+		startingPositions(posicionesIniciales_A, posicionesIniciales_B, res);
+	}
+	res = 'N';    //No hubo gol (***) es un reemplazo de None
+		
+	return res;
+}
+
 
     char makeMove(vector<mov> moves_A, vector<mov> moves_B){ //Me dice el arco goleado tras la jugada y actualiza el marcador, si no hubo gol devuelve N.
         assert(isValidTeamMove(team_A, moves_A));
@@ -693,43 +730,13 @@ public:
         }
     }
 
-//Asumo que las posiciones dentro de la cancha son validas y que siempre empieza el equipo llamado A a la izquierda de la cancha
-    void startingPositions(vector<par> position_A, vector<par> position_B, char starting){
-        //reseteo el estado anterior, empieza de cero
-        hayEstadoAnteriorBall = false;
-        hayEstadoAnteriorPlayer = false;
-        // Saco la pelota del juego y pongo a los jugadores en su lugar
-        for(uint i=0; i<team_A.size(); i++){
-            team_A[i].sinPelota();
-            team_B[i].sinPelota();
-
-            team_A[i].posicionarJugador(position_A[i]);
-            team_B[i].posicionarJugador(position_B[i]);
-
-        }
-        hayPelotaLibre = false;
-
-        // le doy la pelota al jugador que saca y lo pongo en el centro; despues de un gol si el equipo B fue goleado, tiene la posesion de la pelota
-        par pos_inicial_A = make_pair((int)(rows/2), (columns/2) - 1);
-        par pos_inicial_B = make_pair((int)(rows/2), (columns/2));
-        Ball b;
-        if(starting == 'A'){
-            team_A[0].posicionarJugador(pos_inicial_A);
-            team_A[0].takeBall(b);
-
-        }else if(starting == 'B'){
-            team_B[0].posicionarJugador(pos_inicial_B);
-            team_B[0].takeBall(b);
-        }
-    }
-
     void reset(vector<par> position_A, vector<par> position_B){  //reinicia el juego, siempre inicia el equipo A al comienzo del partido
         startingPositions(position_A, position_B, 'A');
         score = make_pair(0,0);
     }
 
     //PRE CONDICION QUE EL JUGADOR DEL EQUIPO DE ENTRADA TENGA LA PELOTA
-    par jugador_con_pelota(char nombre){
+	par jugador_con_pelota(char nombre){
         if(nombre == 'A'){
             for (int i = 0; i < 3; ++i) {
                 if(team_A[i].tienePelota()){
@@ -745,6 +752,20 @@ public:
             }
         }
     }
+//Precondicion requiere que un jugador del equipo tenga posesion de la pelota
+Player quienTienePelota(char nombre){
+	if(nombre == 'A'){
+		for(int i =0; i < 3; ++i){
+			 if(team_A[i].tienePelota()){
+				return team_A[i];	
+			}	
+		}
+	}else{
+		for(int i =0; i < 3; ++i){
+			 if(team_B[i].tienePelota()){
+				return team_B[i];
+		}	
+} 
 
     vector<par> getGoal(char team){
         if (team == 'A'){
@@ -787,22 +808,23 @@ public:
     }
 
 private:
-    par score;   //puntaje del partido
-    vector<Player> team_A;
-    vector<Player> team_B;
-    int columns;
-    int rows;
-    vector<int> goal_rows; //filas del arco
-    vector<par> goal_A;   //coordenadas del arco
-    vector<par> goal_B;
-    Ball free_ball;
-    bool hayPelotaLibre;
-    statePlayer last_statePlayer;
-    bool hayEstadoAnteriorPlayer;
-    Ball last_stateBall;
-    bool hayEstadoAnteriorBall;
-    par last_score;
-
+par score;   //puntaje del partido
+vector<Player> team_A;
+vector<Player> team_B;
+int columns;
+int rows;
+vector<int> goal_rows; //filas del arco
+vector<par> goal_A;   //coordenadas del arco
+vector<par> goal_B;
+Ball free_ball;
+bool hayPelotaLibre;
+statePlayer last_statePlayer;
+bool hayEstadoAnteriorPlayer;
+Ball last_stateBall;
+bool hayEstadoAnteriorBall;
+vector<par> posicionesIniciales_A;
+vector<par> posicionesIniciales_B;
+par last_score;
 };
 
 
