@@ -805,6 +805,10 @@ private:
 
 };
 
+vector<Team> generar_vecinos(Team& origen){
+
+}
+
 class Team{
 public:
 
@@ -952,9 +956,6 @@ public:
 
         equipoJ = t.getitem(nombre);
         char rival = nombre? 'A':'B';
-        //CAMBIAR EL GOL EN CONTRA A LA OFENSIVA, PONER EN DEFENSIVA EL DE GOL A FAVOR
-        //SI METI GOL, EN EL PROXIMO TABLERO MI RIVAL TIENE LA PELOTA
-        //SI ME METIO GOL, EN EL PROXIMO TABLERO YO TENGO LA PELOTA
         float quites = pesos[0] * equipoJ[0].quite() + pesos[1] * equipoJ[1].quite() + pesos[2] * equipoJ[2].quite();
         auto p = t.jugador_con_pelota(rival);
         puntaje_final += pesos[8] * distARival(t, p);
@@ -1320,7 +1321,9 @@ private:
     vector<int> pesos;
 };
 
-
+Team compLocal(Team& inicial){
+    vector<Team> vecinos = generar_vecinos(Team);
+}
 
 
 int main(){
