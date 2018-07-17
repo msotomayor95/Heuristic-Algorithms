@@ -481,7 +481,7 @@ public:
 
         prob_empty = normalize(prob_ball, prob_empty).second;
 
-        if (rand()/ RAND_MAX <= prob_empty){   //Hace que sacarle la pelota al otro jugador dependa del "azar" (***)
+        if ((rand()/(float) RAND_MAX) <= prob_empty){   //Hace que sacarle la pelota al otro jugador dependa del "azar" (***)
             p_empty.takeBall(p_ball.pelota());
             p_ball.sinPelota();
         }
@@ -490,7 +490,7 @@ public:
     void fairFightBall(Player p1, Player p2){
 
         float prob_p2 = normalize(p1.quite(), p2.quite()).second; // ambos usan la probabilidad de quite  (_, ***)
-        float x =  rand()/ RAND_MAX;
+        float x =  rand()/ (float) RAND_MAX;
 
         if (x < prob_p2){
             p2.takeBall(free_ball);
@@ -1431,14 +1431,23 @@ vector<vector<float>> populacion(){
     for (int i = 0; i < 12; ++i) {   //i es la cantidad de poblaciones distintas que se generan que van a ser 12 en total
         for (int j = 0; j < 11; ++j) { //j son los indices de los pesos que van de 0 a 10
             if (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 9) {
-                poblacion[i].push_back(rand() / RAND_MAX);
+                poblacion[i].push_back(rand() /(float) RAND_MAX);  //genera numeros random en el intervalo [0..1]
             } else {
-                poblacion[i].push_back(-rand() / RAND_MAX);
+                poblacion[i].push_back(-rand() /(float) RAND_MAX); //genera numeros random en el intervalo [-1..0]
             }
         }
     }
     return poblacion;
 }
+
+vector<float> fitnessUno(vector<vector<float>>& poblacion){
+
+
+
+}
+
+
+//fitnessDos<float>
 
 int main(){
     srand(time(NULL));
@@ -1490,6 +1499,10 @@ int main(){
 //    if(tablero.pelota_libre()){
 //        tablero.dame_pelota_libre().imprimirPelota();
 //    }
+
+
+
+
 
 
 
