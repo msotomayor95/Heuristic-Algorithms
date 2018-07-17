@@ -313,7 +313,11 @@ typedef pair<vector<Player>, vector<Player> > statePlayer;   //(par(equipoA, equ
 class LogicalBoard{
 public:
 
-    LogicalBoard(int columnas, int filas, vector<par> team_1, vector<par> team_2, par marcador = make_pair(0,0)): score(marcador){   //Asumo el tipo de team_1 y team_2 contienen pares (p_id, p_quite) de cada jugador del equipo 1 y 2
+    LogicalBoard(int columnas, int filas,
+                 vector<pair<int, float>> team_1,
+                 vector<pair<int, float>> team_2,
+                 par marcador = make_pair(0,0)): score(marcador){ //Asumo el tipo de team_1 y team_2 contienen pares (p_id, p_quite) de cada jugador del equipo 1 y 2
+
         assert(((filas % 2) == 1) && (filas>=3));
         assert(((columnas % 2) == 0) && columnas>=2*filas);
 
@@ -398,19 +402,8 @@ public:
                         Ball ball;  //crea una pelota por defecto
                         posicion_jug = make_pair(team[i].pos_i(), team[i].pos_j());
                         ball.jugadorEnPosesion(posicion_jug);
-                        cout << "is valid move ball" << endl;
-                        //print ball
-                        ball.imprimirPelota();
                         ball.setMovement(get<2>(player_move));
-                        //print ball
-                        ball.imprimirPelota();
                         ball_trajectory = ball.trajectory();
-                        ////////////SACAR ESTA IMPRESION
-                        for(uint i=0; i<ball_trajectory.size(); i++){
-                            cout << "(" << ball_trajectory[i].first << ", " << ball_trajectory[i].second << ") ";
-                        }
-                        cout << endl;
-                        cout << "is valid move ball" << endl;
                         trajectory_in_board = true;
                         trajectory_in_goal = false;
                         for(uint i =0; i<ball_trajectory.size(); i++){
@@ -698,11 +691,12 @@ public:
         if(hayPelotaLibre){
             last_stateBall = free_ball;
             hayEstadoAnteriorBall = true;
+        } else {
+
         }
         last_statePlayer = make_pair(team_A, team_B);
         hayEstadoAnteriorPlayer = true;
         last_score = score;
-
     }
 
     void undoMove(){
@@ -1359,9 +1353,25 @@ par jugar(Team &a, Team &b, LogicalBoard& t){
 
     for (auto i = 0; i < match_duration; ++i){
         teamplay_a = a.generarJugada(t);
-//        teamplay_b = b.generarJugada(t);
+        //teamplay_b = b.generarJugada(t);
+        vector<Player> team1 = t.getitem('A');
+        vector<Player> team2 = t.getitem('B');
 
         t.makeMove(teamplay_a, teamplay_b);
+
+//        team1 = t.getitem('A');
+//        team2 = t.getitem('B');
+
+//        for (int i = 0; i < 3; ++i) {
+//            team1[i].imprimirJugador();
+//        }
+//        for (int i = 0; i < 3; ++i) {
+//            team2[i].imprimirJugador();
+//        }
+//
+//        if(t.pelota_libre()){
+//            t.dame_pelota_libre().imprimirPelota();
+//        }
     }
 
     return t.resultado();
@@ -1441,8 +1451,6 @@ vector<vector<float>> populacion(){
 
 vector<float> fitnessUno(vector<vector<float>>& poblacion){
 
-
-
 }
 
 
@@ -1452,13 +1460,15 @@ int main(){
     srand(time(NULL));
 
     float quite = 0.5;
-    vector<par> team_1 = {make_pair(0, quite), make_pair(1, quite), make_pair(2, quite)};
-    vector<par> team_2 = {make_pair(3, quite), make_pair(4, quite), make_pair(5, quite)};
+    vector <pair <int, float>> team_1 = {make_pair(0, quite), make_pair(1, quite), make_pair(2, quite)};
+    vector <pair <int, float>> team_2 = {make_pair(3, quite), make_pair(4, quite), make_pair(5, quite)};
     LogicalBoard tablero( 10, 5, team_1, team_2);
 
     vector<par> posA = {make_pair(1, 1), make_pair(2, 1), make_pair(3, 1)};
-    vector<par> posB = {make_pair(1, 9), make_pair(2, 9), make_pair(3, 9)};
+    vector<par> posB = {make_pair(1, 9), make_pair(1, 8), make_pair(1, 7)};
     tablero.reset(posA, posB);
+
+    auto test = tablero.pelota_libre();
 
     vector<float> weights;
 
@@ -1467,11 +1477,11 @@ int main(){
     weights.push_back(quite);
 
     for (int i = 3; i < 11; ++i){
-        weights.push_back(rand() / float(RAND_MAX));
+        weights.push_back((i == 3 || i == 5 || i == 7 || i == 8 || i == 10? -1:1) * rand() / float(RAND_MAX));
     }
 
-    Team a(5, 10, 'A', weights, 25);
-    Team b(5, 10, 'B', weights, 25);
+    Team a(5, 10, 'A', weights, 10);
+    Team b(5, 10, 'B', weights, 10);
 
     par resultado = jugar(a, b, tablero);
 
