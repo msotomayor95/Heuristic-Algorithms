@@ -534,7 +534,7 @@ public:
 
 
 //Asumo que las posiciones dentro de la cancha son validas y que siempre empieza el equipo llamado A a la izquierda de la cancha
-void startingPositions(vector<par> position_A, vector<par> position_B, char starting){
+    void startingPositions(vector<par> position_A, vector<par> position_B, char starting){
 		//reseteo el estado anterior, empieza de cero
 		hayEstadoAnteriorBall = false;
 		hayEstadoAnteriorPlayer = false;
@@ -565,7 +565,7 @@ void startingPositions(vector<par> position_A, vector<par> position_B, char star
 		}
 }
 
-char updateScore(){ //Devuelve el equipo goleado
+    char updateScore(){ //Devuelve el equipo goleado
 
 	Ball ball = free_ball;
 	char res;
@@ -753,21 +753,23 @@ char updateScore(){ //Devuelve el equipo goleado
         }
     }
 //Precondicion requiere que un jugador del equipo tenga posesion de la pelota
-Player quienTienePelota(char nombre){
-	if(nombre == 'A'){
-		for(int i =0; i < 3; ++i){
-			 if(team_A[i].tienePelota()){
-				return team_A[i];	
-			}	
-		}
-	}else{
-		for(int i =0; i < 3; ++i){
-			 if(team_B[i].tienePelota()){
-				return team_B[i];
-			}	
-		}
-	}
-}		 
+
+    Player quienTienePelota(char nombre) {
+        if (nombre == 'A') {
+            for (int i = 0; i < 3; ++i) {
+                if (team_A[i].tienePelota()) {
+                    return team_A[i];
+                }
+            }
+        } else {
+            for (int i = 0; i < 3; ++i) {
+                if (team_B[i].tienePelota()) {
+                    return team_B[i];
+                }
+            }
+        }
+    }
+
 
     vector<par> getGoal(char team){
         if (team == 'A'){
@@ -810,23 +812,23 @@ Player quienTienePelota(char nombre){
     }
 
 private:
-par score;   //puntaje del partido
-vector<Player> team_A;
-vector<Player> team_B;
-int columns;
-int rows;
-vector<int> goal_rows; //filas del arco
-vector<par> goal_A;   //coordenadas del arco
-vector<par> goal_B;
-Ball free_ball;
-bool hayPelotaLibre;
-statePlayer last_statePlayer;
-bool hayEstadoAnteriorPlayer;
-Ball last_stateBall;
-bool hayEstadoAnteriorBall;
-vector<par> posicionesIniciales_A;
-vector<par> posicionesIniciales_B;
-par last_score;
+    par score;   //puntaje del partido
+    vector<Player> team_A;
+    vector<Player> team_B;
+    int columns;
+    int rows;
+    vector<int> goal_rows; //filas del arco
+    vector<par> goal_A;   //coordenadas del arco
+    vector<par> goal_B;
+    Ball free_ball;
+    bool hayPelotaLibre;
+    statePlayer last_statePlayer;
+    bool hayEstadoAnteriorPlayer;
+    Ball last_stateBall;
+    bool hayEstadoAnteriorBall;
+    vector<par> posicionesIniciales_A;
+    vector<par> posicionesIniciales_B;
+    par last_score;
 };
 
 
@@ -904,10 +906,6 @@ public:
         par res_ant = t.resultado_ant();
         if (nombre == 'B') return (res.first > res_ant.first);
         return (res.second > res_ant.second);
-    }
-
-    float distEntreJugadores(LogicalBoard& t){
-        
     }
 
     int yendoAlArco(LogicalBoard& t){
@@ -1326,6 +1324,10 @@ public:
         return pesos;
     }
 
+    int& dameTurnos() {
+        return turnos;
+    }
+
 private:
     //podria cambiar la distancia de cada uno
     int filas;
@@ -1345,7 +1347,7 @@ private:
     vector<float> pesos;
 };
 
-vector<Team> generar_vecinos_ofensivos(Team &original, par rango){
+vector<vector<float>> generar_vecinos_ofensivos(Team &original){
     vector<vector<float>> pv(6);
     vector<vector<float>> vecinos;
     vector<float> single;
@@ -1362,38 +1364,61 @@ vector<Team> generar_vecinos_ofensivos(Team &original, par rango){
             pv[i].push_back(k);
         }
     }
-    for (int j = 0; j < pv[0].size(); ++j) {
-        for (int i = 0; i < pv[1].size(); ++i) {
-            for (int l = 0; l < pv[2].size(); ++l) {
-                for (int m = 0; m < pv[3].size(); ++m) {
-                    for (int n = 0; n < pv[4].size(); ++n) {
-                        for (int i1 = 0; i1 < pv[5].size(); ++i1) {
+    bool meGanaron = false;
+    for (int j = 0; j < pv[0].size() && !meGanaron; ++j) {
+        for (int i = 0; i < pv[1].size() && !meGanaron; ++i) {
+            for (int l = 0; l < pv[2].size() && !meGanaron; ++l) {
+                for (int m = 0; m < pv[3].size() && !meGanaron; ++m) {
+                    for (int n = 0; n < pv[4].size() && !meGanaron; ++n) {
+                        for (int i1 = 0; i1 < pv[5].size() && !meGanaron; ++i1) {
                             single.push_back(pv[0][j]);
                             single.push_back(pv[1][i]);
                             single.push_back(pv[2][l]);
                             single.push_back(pv[3][m]);
                             single.push_back(pv[4][n]);
                             single.push_back(pv[5][i1]);
-                            pv.push_back(single);
+                            for (int k1 = 6; k1 < 11; ++k1) {
+                                single.push_back(original.damePesos()[k1]);
+                            }
+                            for (int l1 = 0; l1 < 20; ++l1) {
+                                Team b(5, 10, 'B', single, original.dameTurnos());
+                            }
+                            vecinos.push_back(single);
                             single.clear();
-
                         }
                     }
                 }
             }
         }
     }
-
-    return pv;
+    return vecinos;
 }
 
 Team compLocal(Team& inicial){
-    vector<Team> vecinos = generar_vecinos_ofensivos(inicial);
+    int i = 0;
+    vector<vector<float>> vecinos = generar_vecinos_ofensivos(inicial);
+    ///aca van a jugar
+    //aca me gano uno
+    inicial.damePesos() = vecinos[i];
+    vecinos.clear();
+    vecinos = generar_vecinos_defensivos(inicial);
 }
 
 
-void jugar(Team &a, Team &b, LogicalBoard& t){
+par jugar(Team &a, Team &b, LogicalBoard& t){
+    vector<mov> teamplay_a;
+    vector<mov> teamplay_b;
 
+    int match_duration = a.dameTurnos();
+
+    for (auto i = 0; i < match_duration; ++i){
+        teamplay_a = a.generarJugada(t);
+        teamplay_b = b.generarJugada(t);
+
+        t.makeMove(teamplay_a, teamplay_b);
+    }
+
+    return t.resultado();
 }
 
 
