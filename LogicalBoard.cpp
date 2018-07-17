@@ -805,9 +805,6 @@ private:
 
 };
 
-vector<Team> generar_vecinos(Team& origen){
-
-}
 
 class Team{
 public:
@@ -945,7 +942,7 @@ public:
         float esquiva = pesos[0] * (1-equipoJ[0].quite()) + pesos[1] * (1-equipoJ[1].quite()) +
                         pesos[2] * (1-equipoJ[2].quite());
         puntaje_final += pesos[3] * distAlArco(t) + pesos[4] * anguloDeTiro(t);
-        puntaje_final +=  esquiva  + pesos[7] * (int)golContra(t);
+        puntaje_final +=  esquiva  + pesos[5] * (int)golContra(t);
         return puntaje_final;
     };
 
@@ -958,14 +955,14 @@ public:
         char rival = nombre? 'A':'B';
         float quites = pesos[0] * equipoJ[0].quite() + pesos[1] * equipoJ[1].quite() + pesos[2] * equipoJ[2].quite();
         auto p = t.jugador_con_pelota(rival);
-        puntaje_final += pesos[8] * distARival(t, p);
+        puntaje_final += pesos[7] * distARival(t, p);
         puntaje_final += quites + pesos[6] * (int)golAFavor(t);
         return puntaje_final;
     };
 
     float puntuar_libre(LogicalBoard& t ){
         float puntaje_final = 0;
-        puntaje_final = pesos[5] * distMinAPelota(t) + pesos[9] * yendoAlArco(t) + pesos[10] * equipoEnTrayectoria(t);
+        puntaje_final = pesos[8] * distMinAPelota(t) + pesos[9] * yendoAlArco(t) + pesos[10] * equipoEnTrayectoria(t);
         return puntaje_final;
     };
 
@@ -1301,6 +1298,10 @@ public:
     }
 }
 
+    vector<float>& damePesos(){
+        return pesos;
+    }
+
 private:
     //podria cambiar la distancia de cada uno
     int filas;
@@ -1311,17 +1312,59 @@ private:
     // de la posicion 0 a 2 estan los p.quite de cada jugador
     // en la posicion 3 esta la distancia al arco tiene que ser negativo (cuanto mas lejos peor)
     // en la posicion 4 es el peso del angulo del tiro del jugador con la pelota.
-    // en la posicion 5 esta la distancia a la pelota libre, (negativo).
+    // en la posicion 5 es el peso de ser goleado (tiene que ser negativo)
     // en la posicion 6 es el peso de hacer un gol
-    // en la posicion 7 es el peso de ser goleado (tiene que ser negativo)
-    // en la posicion 8 esta la distancia al rival con pelota NEGATIVO
+    // en la posicion 7 esta la distancia al rival con pelota NEGATIVO
+    // en la posicion 8 esta la distancia a la pelota libre, (negativo).
     // en la posicion 9 voy al arco teniendo la pelota
     // en la posicion 10 punto si tiene o no la pelota el rival en puntuar libre, tiene que ser valor negativo
     vector<float> pesos;
 };
 
+vector<Team> generar_vecinos_ofensivos(Team &original, par rango){
+    vector<vector<float>> pv(6);
+    vector<vector<float>> vecinos;
+    vector<float> single;
+    float k;
+    for (int i = 0; i < 6; ++i) {
+        k = original.damePesos()[i]:
+        pv[i].push_back(k);
+        if(original.damePesos()[i] != 1){
+            k = k + 0.01;
+            pv[i].push_back(k);
+        }
+        if(original.damePesos()[i] != (-1)){
+            k = original.damePesos()[i] - 0.01;
+            pv[i].push_back(k);
+        }
+    }
+    for (int j = 0; j < pv[0].size(); ++j) {
+        for (int i = 0; i < pv[1].size(); ++i) {
+            for (int l = 0; l < pv[2].size(); ++l) {
+                for (int m = 0; m < pv[3].size(); ++m) {
+                    for (int n = 0; n < pv[4].size(); ++n) {
+                        for (int i1 = 0; i1 < pv[5].size(); ++i1) {
+                            single.push_back(pv[0][j]);
+                            single.push_back(pv[1][i]);
+                            single.push_back(pv[2][l]);
+                            single.push_back(pv[3][m]);
+                            single.push_back(pv[4][n]);
+                            single.push_back(pv[5][i1]);
+                            pv.push_back(single);
+                            single.clear();
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return pv;
+}
+
 Team compLocal(Team& inicial){
-    vector<Team> vecinos = generar_vecinos(Team);
+    vector<Team> vecinos = generar_vecinos_ofensivos(inicial);
 }
 
 
