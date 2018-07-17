@@ -1347,6 +1347,22 @@ private:
     vector<float> pesos;
 };
 
+par jugar(Team &a, Team &b, LogicalBoard& t){
+    vector<mov> teamplay_a;
+    vector<mov> teamplay_b;
+
+    int match_duration = a.dameTurnos();
+
+    for (auto i = 0; i < match_duration; ++i){
+        teamplay_a = a.generarJugada(t);
+        teamplay_b = b.generarJugada(t);
+
+        t.makeMove(teamplay_a, teamplay_b);
+    }
+
+    return t.resultado();
+}
+
 vector<float> campOff(Team &original, LogicalBoard &t){
     vector<vector<float>> pv(6);
     vector<float> single;
@@ -1403,23 +1419,6 @@ Team compLocal(Team& inicial, LogicalBoard &t){
     ///aca van a jugar
     //aca me gano uno
 
-}
-
-
-par jugar(Team &a, Team &b, LogicalBoard& t){
-    vector<mov> teamplay_a;
-    vector<mov> teamplay_b;
-
-    int match_duration = a.dameTurnos();
-
-    for (auto i = 0; i < match_duration; ++i){
-        teamplay_a = a.generarJugada(t);
-        teamplay_b = b.generarJugada(t);
-
-        t.makeMove(teamplay_a, teamplay_b);
-    }
-
-    return t.resultado();
 }
 
 
