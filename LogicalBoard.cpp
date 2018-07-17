@@ -481,7 +481,7 @@ public:
 
         prob_empty = normalize(prob_ball, prob_empty).second;
 
-        if (rand()/ RAND_MAX) <= prob_empty){   //Hace que sacarle la pelota al otro jugador dependa del "azar" (***)
+        if (rand()/ RAND_MAX <= prob_empty){   //Hace que sacarle la pelota al otro jugador dependa del "azar" (***)
             p_empty.takeBall(p_ball.pelota());
             p_ball.sinPelota();
         }
