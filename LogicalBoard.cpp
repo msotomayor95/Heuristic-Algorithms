@@ -699,6 +699,7 @@ public:
             last_stateBall = free_ball;
             hayEstadoAnteriorBall = true;
         }
+        estabaLibre = hayPelotaLibre;
         last_statePlayer = make_pair(team_A, team_B);
         hayEstadoAnteriorPlayer = true;
         last_score = score;
@@ -715,6 +716,7 @@ public:
             free_ball = last_stateBall;
             hayEstadoAnteriorBall = false;
         }
+        hayPelotaLibre = estabaLibre;
         score = last_score;
     }
 
@@ -829,6 +831,7 @@ private:
     vector<par> posicionesIniciales_A;
     vector<par> posicionesIniciales_B;
     par last_score;
+    bool estabaLibre;
 };
 
 
