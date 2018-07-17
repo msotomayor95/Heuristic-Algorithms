@@ -1251,13 +1251,13 @@ public:
     }
 
     vector<vector<mov>> crearMovValido(LogicalBoard &t, vector<vector<mov>> &ma){
-        int reserva = 1;
-        for (int i = 0; i < ma.size(); ++i) {
-            reserva *= ma[i].size();
-        }
+//        int reserva = 1;
+//        for (int i = 0; i < ma.size(); ++i) {
+//            reserva *= ma[i].size();
+//        }
         vector<Player> nosotros = t.getitem(nombre);
-        vector<vector<mov>> v(reserva);
-        vector<mov> movi(3);
+        vector<vector<mov>> v;
+        vector<mov> movi;
         for (int i = 0; i < ma[0].size(); ++i) {
             for (int k = 0; k < ma[1].size(); ++k) {
                 for (int l = 0; l < ma[2].size(); ++l) {
