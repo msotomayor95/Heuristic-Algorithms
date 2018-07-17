@@ -481,7 +481,7 @@ public:
 
         prob_empty = normalize(prob_ball, prob_empty).second;
 
-        if ((((float) rand()) / 1) <= prob_empty){   //Hace que sacarle la pelota al otro jugador dependa del "azar" (***)
+        if (rand()/ RAND_MAX) <= prob_empty){   //Hace que sacarle la pelota al otro jugador dependa del "azar" (***)
             p_empty.takeBall(p_ball.pelota());
             p_ball.sinPelota();
         }
@@ -490,7 +490,7 @@ public:
     void fairFightBall(Player p1, Player p2){
 
         float prob_p2 = normalize(p1.quite(), p2.quite()).second; // ambos usan la probabilidad de quite  (_, ***)
-        float x = ((float) rand()) / 1;
+        float x =  rand()/ RAND_MAX;
 
         if (x < prob_p2){
             p2.takeBall(free_ball);
@@ -534,7 +534,7 @@ public:
 
 
 //Asumo que las posiciones dentro de la cancha son validas y que siempre empieza el equipo llamado A a la izquierda de la cancha
-void startingPositions(vector<par> position_A, vector<par> position_B, char starting){
+    void startingPositions(vector<par> position_A, vector<par> position_B, char starting){
 		//reseteo el estado anterior, empieza de cero
 		hayEstadoAnteriorBall = false;
 		hayEstadoAnteriorPlayer = false;
@@ -565,7 +565,7 @@ void startingPositions(vector<par> position_A, vector<par> position_B, char star
 		}
 }
 
-char updateScore(){ //Devuelve el equipo goleado
+    char updateScore(){ //Devuelve el equipo goleado
 
 	Ball ball = free_ball;
 	char res;
@@ -753,7 +753,8 @@ char updateScore(){ //Devuelve el equipo goleado
         }
     }
 //Precondicion requiere que un jugador del equipo tenga posesion de la pelota
-Player quienTienePelota(char nombre) {
+
+    Player quienTienePelota(char nombre) {
         if (nombre == 'A') {
             for (int i = 0; i < 3; ++i) {
                 if (team_A[i].tienePelota()) {
@@ -768,6 +769,7 @@ Player quienTienePelota(char nombre) {
             }
         }
     }
+
 
     vector<par> getGoal(char team){
         if (team == 'A'){
@@ -810,23 +812,23 @@ Player quienTienePelota(char nombre) {
     }
 
 private:
-par score;   //puntaje del partido
-vector<Player> team_A;
-vector<Player> team_B;
-int columns;
-int rows;
-vector<int> goal_rows; //filas del arco
-vector<par> goal_A;   //coordenadas del arco
-vector<par> goal_B;
-Ball free_ball;
-bool hayPelotaLibre;
-statePlayer last_statePlayer;
-bool hayEstadoAnteriorPlayer;
-Ball last_stateBall;
-bool hayEstadoAnteriorBall;
-vector<par> posicionesIniciales_A;
-vector<par> posicionesIniciales_B;
-par last_score;
+    par score;   //puntaje del partido
+    vector<Player> team_A;
+    vector<Player> team_B;
+    int columns;
+    int rows;
+    vector<int> goal_rows; //filas del arco
+    vector<par> goal_A;   //coordenadas del arco
+    vector<par> goal_B;
+    Ball free_ball;
+    bool hayPelotaLibre;
+    statePlayer last_statePlayer;
+    bool hayEstadoAnteriorPlayer;
+    Ball last_stateBall;
+    bool hayEstadoAnteriorBall;
+    vector<par> posicionesIniciales_A;
+    vector<par> posicionesIniciales_B;
+    par last_score;
 };
 
 
@@ -904,10 +906,6 @@ public:
         par res_ant = t.resultado_ant();
         if (nombre == 'B') return (res.first > res_ant.first);
         return (res.second > res_ant.second);
-    }
-
-    float distEntreJugadores(LogicalBoard& t){
-        
     }
 
     int yendoAlArco(LogicalBoard& t){
@@ -1326,6 +1324,10 @@ public:
         return pesos;
     }
 
+    int& dameTurnos() {
+        return turnos;
+    }
+
 private:
     //podria cambiar la distancia de cada uno
     int filas;
@@ -1403,8 +1405,35 @@ Team compLocal(Team& inicial){
 }
 
 
-void jugar(Team &a, Team &b, LogicalBoard& t){
+par jugar(Team &a, Team &b, LogicalBoard& t){
+    vector<mov> teamplay_a;
+    vector<mov> teamplay_b;
 
+    int match_duration = a.dameTurnos();
+
+    for (auto i = 0; i < match_duration; ++i){
+        teamplay_a = a.generarJugada(t);
+        teamplay_b = b.generarJugada(t);
+
+        t.makeMove(teamplay_a, teamplay_b);
+    }
+
+    return t.resultado();
+}
+
+
+vector<vector<float>> populacion(){
+    vector<vector<float>> poblacion(12);
+    for (int i = 0; i < 12; ++i) {   //i es la cantidad de poblaciones distintas que se generan que van a ser 12 en total
+        for (int j = 0; j < 11; ++j) { //j son los indices de los pesos que van de 0 a 10
+            if (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 9) {
+                poblacion[i].push_back(rand() / RAND_MAX);
+            } else {
+                poblacion[i].push_back(-rand() / RAND_MAX);
+            }
+        }
+    }
+    return poblacion;
 }
 
 int main(){
