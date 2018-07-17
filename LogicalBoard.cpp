@@ -753,19 +753,21 @@ char updateScore(){ //Devuelve el equipo goleado
         }
     }
 //Precondicion requiere que un jugador del equipo tenga posesion de la pelota
-Player quienTienePelota(char nombre){
-	if(nombre == 'A'){
-		for(int i =0; i < 3; ++i){
-			 if(team_A[i].tienePelota()){
-				return team_A[i];	
-			}	
-		}
-	}else{
-		for(int i =0; i < 3; ++i){
-			 if(team_B[i].tienePelota()){
-				return team_B[i];
-		}	
-} 
+Player quienTienePelota(char nombre) {
+        if (nombre == 'A') {
+            for (int i = 0; i < 3; ++i) {
+                if (team_A[i].tienePelota()) {
+                    return team_A[i];
+                }
+            }
+        } else {
+            for (int i = 0; i < 3; ++i) {
+                if (team_B[i].tienePelota()) {
+                    return team_B[i];
+                }
+            }
+        }
+    }
 
     vector<par> getGoal(char team){
         if (team == 'A'){
@@ -1343,13 +1345,13 @@ private:
     vector<float> pesos;
 };
 
-vector<Team> generar_vecinos_ofensivos(Team &original, par rango){
+vector<vector<float>> generar_vecinos_ofensivos(Team &original){
     vector<vector<float>> pv(6);
     vector<vector<float>> vecinos;
     vector<float> single;
     float k;
     for (int i = 0; i < 6; ++i) {
-        k = original.damePesos()[i]:
+        k = original.damePesos()[i];
         pv[i].push_back(k);
         if(original.damePesos()[i] != 1){
             k = k + 0.01;
@@ -1360,33 +1362,44 @@ vector<Team> generar_vecinos_ofensivos(Team &original, par rango){
             pv[i].push_back(k);
         }
     }
-    for (int j = 0; j < pv[0].size(); ++j) {
-        for (int i = 0; i < pv[1].size(); ++i) {
-            for (int l = 0; l < pv[2].size(); ++l) {
-                for (int m = 0; m < pv[3].size(); ++m) {
-                    for (int n = 0; n < pv[4].size(); ++n) {
-                        for (int i1 = 0; i1 < pv[5].size(); ++i1) {
+    bool meGanaron = false;
+    for (int j = 0; j < pv[0].size() && !meGanaron; ++j) {
+        for (int i = 0; i < pv[1].size() && !meGanaron; ++i) {
+            for (int l = 0; l < pv[2].size() && !meGanaron; ++l) {
+                for (int m = 0; m < pv[3].size() && !meGanaron; ++m) {
+                    for (int n = 0; n < pv[4].size() && !meGanaron; ++n) {
+                        for (int i1 = 0; i1 < pv[5].size() && !meGanaron; ++i1) {
                             single.push_back(pv[0][j]);
                             single.push_back(pv[1][i]);
                             single.push_back(pv[2][l]);
                             single.push_back(pv[3][m]);
                             single.push_back(pv[4][n]);
                             single.push_back(pv[5][i1]);
-                            pv.push_back(single);
+                            for (int k1 = 6; k1 < 11; ++k1) {
+                                single.push_back(original.damePesos()[k1]);
+                            }
+                            for (int l1 = 0; l1 < 20; ++l1) {
+                                Team b(5, 10, 'B', single, original.dameTurnos());
+                            }
+                            vecinos.push_back(single);
                             single.clear();
-
                         }
                     }
                 }
             }
         }
     }
-
-    return pv;
+    return vecinos;
 }
 
 Team compLocal(Team& inicial){
-    vector<Team> vecinos = generar_vecinos_ofensivos(inicial);
+    int i = 0;
+    vector<vector<float>> vecinos = generar_vecinos_ofensivos(inicial);
+    ///aca van a jugar
+    //aca me gano uno
+    inicial.damePesos() = vecinos[i];
+    vecinos.clear();
+    vecinos = generar_vecinos_defensivos(inicial);
 }
 
 
