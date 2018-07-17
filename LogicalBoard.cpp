@@ -812,7 +812,7 @@ vector<Team> generar_vecinos(Team& origen){
 class Team{
 public:
 
-    Team(int filas, int columnas, char nombre, vector<int> pesos, int turnos): filas(filas), columnas(columnas),
+    Team(int filas, int columnas, char nombre, vector<float> pesos, int turnos): filas(filas), columnas(columnas),
     nombre(nombre), pesos(pesos), turnos(turnos){
         izq = nombre == 'A';
     }
@@ -974,16 +974,16 @@ public:
         vector<mov> mejor_jugada;
         if(t.pelota_libre()){
             jugadas = generar_mov_libres(t);
-            mejor_jugada = elegirMov(t, jugadas, 0);
- //
+            mejor_jugada = elegirMov(t, jugadas);
+
         }
         else if(t.posesion(nombre)){
             jugadas = generar_mov_ofensivos(t);
-            mejor_jugada = elegirMov(t, jugadas, 1);
+            mejor_jugada = elegirMov(t, jugadas);
         }
         else{
             jugadas = generar_mov_defensivos(t);
-            mejor_jugada = elegirMov(t, jugadas, 2);
+            mejor_jugada = elegirMov(t, jugadas);
         }
         return mejor_jugada;
     }
@@ -1253,8 +1253,7 @@ public:
         return v;
     }
 
-    vector<mov> elegirMov(LogicalBoard &t, vector<vector<mov>> &v, int eleccion){
-        //if(eleccion == 0)
+    vector<mov> elegirMov(LogicalBoard &t, vector<vector<mov>> &v){
         char nom;
         nombre == 'A'? nom ='B': nom = 'A';
         auto rivales = t.getitem(nom);
@@ -1270,7 +1269,7 @@ public:
         if(nom == 'A'){
             for (int i = 0; i < v.size(); ++i) {
                 t.makeMove(parado, v[i]);
-                tmp = puntuarTablero(t, eleccion);
+                tmp = puntuarTablero(t);
                 if (i == 0 || tmp > max.first){
                     max.first = tmp;
                     max.second = i;
@@ -1281,7 +1280,7 @@ public:
         else{
                 for (int i = 0; i < v.size(); ++i) {
                     t.makeMove(v[i], parado);
-                    tmp = puntuarTablero(t, eleccion);
+                    tmp = puntuarTablero(t);
                     if (i == 0 || tmp > max.first){
                         max.first = tmp;
                         max.second = i;
@@ -1292,10 +1291,10 @@ public:
         return v[max.second];
     }
 
-float puntuarTablero(LogicalBoard &t, int eleccion){
-    if(eleccion == 0) {
+    float puntuarTablero(LogicalBoard &t){
+    if(t.pelota_libre()) {
         return puntuar_libre(t);
-    }else if(eleccion == 1){
+    }else if(t.posesion(nombre)){
         return puntuar_ofensiva(t);
     }else{
         return puntuar_defensiva(t);
@@ -1318,7 +1317,7 @@ private:
     // en la posicion 8 esta la distancia al rival con pelota NEGATIVO
     // en la posicion 9 voy al arco teniendo la pelota
     // en la posicion 10 punto si tiene o no la pelota el rival en puntuar libre, tiene que ser valor negativo
-    vector<int> pesos;
+    vector<float> pesos;
 };
 
 Team compLocal(Team& inicial){
@@ -1326,7 +1325,13 @@ Team compLocal(Team& inicial){
 }
 
 
+void jugar(Team &a, Team &b, LogicalBoard& t){
+
+}
+
 int main(){
+    srand(time(NULL));
+
     float quite = 0.5;
     vector<par> team_1 = {make_pair(0, quite), make_pair(1, quite), make_pair(2, quite)};
     vector<par> team_2 = {make_pair(3, quite), make_pair(4, quite), make_pair(5, quite)};
@@ -1359,9 +1364,6 @@ int main(){
     }
 
 
-
-
-    srand(time(NULL));
 
     return 0;
 }
