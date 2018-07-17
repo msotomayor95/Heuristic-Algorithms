@@ -764,8 +764,10 @@ Player quienTienePelota(char nombre){
 		for(int i =0; i < 3; ++i){
 			 if(team_B[i].tienePelota()){
 				return team_B[i];
-		}	
-} 
+			}	
+		}
+	}
+}		 
 
     vector<par> getGoal(char team){
         if (team == 'A'){
