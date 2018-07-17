@@ -1349,13 +1349,17 @@ private:
 
 par jugar(Team &a, Team &b, LogicalBoard& t){
     vector<mov> teamplay_a;
-    vector<mov> teamplay_b;
+
+    par m = make_pair(0, 0);
+    vector<mov> teamplay_b = {make_tuple(3, "MOVIMIENTO", m),
+                              make_tuple(4, "MOVIMIENTO", m),
+                              make_tuple(5, "MOVIMIENTO", m)};
 
     int match_duration = a.dameTurnos();
 
     for (auto i = 0; i < match_duration; ++i){
         teamplay_a = a.generarJugada(t);
-        teamplay_b = b.generarJugada(t);
+//        teamplay_b = b.generarJugada(t);
 
         t.makeMove(teamplay_a, teamplay_b);
     }
@@ -1418,28 +1422,6 @@ Team compLocal(Team& inicial, LogicalBoard &t){
     inicial.damePesos() = campOff(inicial, t);
     ///aca van a jugar
     //aca me gano uno
-}
-
-
-par jugar(Team &a, Team &b, LogicalBoard& t){
-    vector<mov> teamplay_a;
-
-    par m = make_pair(0, 0);
-    vector<mov> teamplay_b = {make_tuple(3, "MOVIMIENTO", m),
-                              make_tuple(4, "MOVIMIENTO", m),
-                              make_tuple(5, "MOVIMIENTO", m)};
-
-    int match_duration = a.dameTurnos();
-
-    for (auto i = 0; i < match_duration; ++i){
-        teamplay_a = a.generarJugada(t);
-//        teamplay_b = b.generarJugada(t);
-
-        t.makeMove(teamplay_a, teamplay_b);
-    }
-
-    return t.resultado();
->>>>>>> 6bf6f778a3d57d64ca88a03d97a6bddcdab2839d
 }
 
 
