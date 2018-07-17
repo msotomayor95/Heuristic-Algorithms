@@ -481,7 +481,7 @@ public:
 
         prob_empty = normalize(prob_ball, prob_empty).second;
 
-        if (rand()/ RAND_MAX <= prob_empty){   //Hace que sacarle la pelota al otro jugador dependa del "azar" (***)
+        if ((rand()/(float) RAND_MAX) <= prob_empty){   //Hace que sacarle la pelota al otro jugador dependa del "azar" (***)
             p_empty.takeBall(p_ball.pelota());
             p_ball.sinPelota();
         }
@@ -490,7 +490,7 @@ public:
     void fairFightBall(Player p1, Player p2){
 
         float prob_p2 = normalize(p1.quite(), p2.quite()).second; // ambos usan la probabilidad de quite  (_, ***)
-        float x =  rand()/ RAND_MAX;
+        float x =  rand()/ (float) RAND_MAX;
 
         if (x < prob_p2){
             p2.takeBall(free_ball);
@@ -1418,7 +1418,28 @@ Team compLocal(Team& inicial, LogicalBoard &t){
     inicial.damePesos() = campOff(inicial, t);
     ///aca van a jugar
     //aca me gano uno
+}
 
+
+par jugar(Team &a, Team &b, LogicalBoard& t){
+    vector<mov> teamplay_a;
+
+    par m = make_pair(0, 0);
+    vector<mov> teamplay_b = {make_tuple(3, "MOVIMIENTO", m),
+                              make_tuple(4, "MOVIMIENTO", m),
+                              make_tuple(5, "MOVIMIENTO", m)};
+
+    int match_duration = a.dameTurnos();
+
+    for (auto i = 0; i < match_duration; ++i){
+        teamplay_a = a.generarJugada(t);
+//        teamplay_b = b.generarJugada(t);
+
+        t.makeMove(teamplay_a, teamplay_b);
+    }
+
+    return t.resultado();
+>>>>>>> 6bf6f778a3d57d64ca88a03d97a6bddcdab2839d
 }
 
 
@@ -1427,14 +1448,23 @@ vector<vector<float>> populacion(){
     for (int i = 0; i < 12; ++i) {   //i es la cantidad de poblaciones distintas que se generan que van a ser 12 en total
         for (int j = 0; j < 11; ++j) { //j son los indices de los pesos que van de 0 a 10
             if (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 9) {
-                poblacion[i].push_back(rand() / RAND_MAX);
+                poblacion[i].push_back(rand() /(float) RAND_MAX);  //genera numeros random en el intervalo [0..1]
             } else {
-                poblacion[i].push_back(-rand() / RAND_MAX);
+                poblacion[i].push_back(-rand() /(float) RAND_MAX); //genera numeros random en el intervalo [-1..0]
             }
         }
     }
     return poblacion;
 }
+
+vector<float> fitnessUno(vector<vector<float>>& poblacion){
+
+
+
+}
+
+
+//fitnessDos<float>
 
 int main(){
     srand(time(NULL));
@@ -1448,27 +1478,48 @@ int main(){
     vector<par> posB = {make_pair(1, 9), make_pair(2, 9), make_pair(3, 9)};
     tablero.reset(posA, posB);
 
-    par m = make_pair(0, 0);
-    vector<mov> jugada_B = {make_tuple(3, "MOVIMIENTO", m), make_tuple(4, "MOVIMIENTO", m), make_tuple(5, "MOVIMIENTO", m)};
-    par m1 = make_pair(1, 1);
-    par m2 = make_pair(3, 0);
-    par m3 = make_pair(4, 0);
-    vector<mov> jugada_A = {make_tuple(0, "PASE", m1), make_tuple(1, "MOVIMIENTO", m2), make_tuple(2, "MOVIMIENTO", m2)};
+    vector<float> weights;
 
-    tablero.makeMove(jugada_A, jugada_B);
-    auto team1 = tablero.getitem('A');
-    auto team2 = tablero.getitem('B');
+    weights.push_back(quite);
+    weights.push_back(quite);
+    weights.push_back(quite);
 
-    for (int i = 0; i < 3; ++i) {
-        team1[i].imprimirJugador();
+    for (int i = 3; i < 11; ++i){
+        weights.push_back(rand() / float(RAND_MAX));
     }
-    for (int i = 0; i < 3; ++i) {
-        team2[i].imprimirJugador();
 
-    }
-    if(tablero.pelota_libre()){
-        tablero.dame_pelota_libre().imprimirPelota();
-    }
+    Team a(5, 10, 'A', weights, 25);
+    Team b(5, 10, 'B', weights, 25);
+
+    par resultado = jugar(a, b, tablero);
+
+    cout << "Goles de TEAM A: " << resultado.first << endl;
+    cout << "Goles de TEAM B: " << resultado.second << endl;
+
+//    par m = make_pair(0, 0);
+//    vector<mov> jugada_B = {make_tuple(3, "MOVIMIENTO", m), make_tuple(4, "MOVIMIENTO", m), make_tuple(5, "MOVIMIENTO", m)};
+//    par m1 = make_pair(1, 1);
+//    par m2 = make_pair(3, 0);
+//    par m3 = make_pair(4, 0);
+//    vector<mov> jugada_A = {make_tuple(0, "PASE", m1), make_tuple(1, "MOVIMIENTO", m2), make_tuple(2, "MOVIMIENTO", m2)};
+//    tablero.makeMove(jugada_A, jugada_B);
+//    auto team1 = tablero.getitem('A');
+//    auto team2 = tablero.getitem('B');
+//
+//    for (int i = 0; i < 3; ++i) {
+//        team1[i].imprimirJugador();
+//    }
+//    for (int i = 0; i < 3; ++i) {
+//        team2[i].imprimirJugador();
+//
+//    }
+//    if(tablero.pelota_libre()){
+//        tablero.dame_pelota_libre().imprimirPelota();
+//    }
+
+
+
+
 
 
 
