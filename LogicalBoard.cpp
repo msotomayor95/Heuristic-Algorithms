@@ -1493,15 +1493,12 @@ vector<float> fitnessUno(vector<vector<float> >& poblacion, int& turnos, Logical
 
 //fitnessDos suma puntos en funcion de partidos ganados o empatados + la diferencia de goles en caso de ganar
 vector<float> fitnessDos(vector<vector<float>>& poblacion, int& turnos, LogicalBoard& t){
+    int dif_goles;
+    par marcador;
     vector<Team> equipos;
     vector<float> puntaje(12, 0);
     for (int i = 0; i < 12; ++i) { //En principio todos los equipos se llaman B, luego cambio a A aquel que va a competir con todos los demas
         equipos.push_back(Team(t.filas(), t.columnas(), 'B', poblacion[i], turnos));
-    }
-    for (int i = 0; i < 12; ++i) { //En principio todos los equipos se llaman B, luego cambio a A aquel que va a competir con todos los demas
-        pesos = poblacion[i];
-        Team p(t.filas(), t.columnas(), 'B', pesos, turnos);
-        equipos.push_back(p);
     }
     for (int i = 0; i < 12; ++i) {
         for (int j = i+1; j <12 ; ++j) {
