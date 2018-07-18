@@ -941,7 +941,7 @@ public:
             if (trayectoria[i].first == i_ju && trayectoria[i].second == j_ju) return 1;
             int i_ri = t.getitem(rival)[i].pos_i();
             int j_ri = t.getitem(rival)[i].pos_j();
-            if (trayectoria[i].first == i_ri && trayectoria[i].second == j_ri) return 0;
+            if (trayectoria[i].first == i_ri && trayectoria[i].second == j_ri) return (-1);
         }
 
         return 0;
@@ -1341,7 +1341,10 @@ private:
     // en la posicion 7 esta la distancia al rival con pelota NEGATIVO
     // en la posicion 8 esta la distancia a la pelota libre, (negativo).
     // en la posicion 9 la pelota esta yendo al arco
-    // en la posicion 10 hay un rival en la trayectoria de la pelota, tiene que ser valor negativo
+    // en la posicion 10 hay un rival en la trayectoria de la pelota
+
+    //quizas estaria bueno tener un peso mas y separar la funcion que devuelve si un rival o yo estoy en
+    //trayectoria
     vector<float> pesos;
 };
 
