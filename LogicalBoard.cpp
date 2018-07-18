@@ -1321,7 +1321,7 @@ public:
     }
 
     void cambiarNombre(char nom){
-            
+        nombre = nom;
     }
 
 private:
