@@ -450,7 +450,7 @@ public:
 
     }
 
-    void makeTeamMove(vector <Player> team, vector <mov> moves) {
+    void makeTeamMove(vector<Player> &team, vector<mov> &moves) {
         mov player_move;
         for (uint i = 0; i < team.size(); i++) {
             player_move = buscarMov(team[i].p_id(), moves);
@@ -945,12 +945,11 @@ public:
     }
 
     int anguloDeTiro(LogicalBoard &t) {
-        if (t.pelota_libre()) return 0;
         par pos = t.jugador_con_pelota(nombre);
 
         char rival = nombre == 'A' ? 'B' : 'A';
         int cant_max_pasos = filas; // tengo M filas y solo se me permite patear con fuerza M/2 (la pelota recorre
-        // como mucho una distancia M porque ).
+        // como mucho una distancia M porque).
 
         bool estoy_en_angulo = pos.first == t.getGoal(rival)[0].first ||
                                pos.first == t.getGoal(rival)[1].first ||
@@ -1289,10 +1288,10 @@ public:
             }
         }
         else {
-            for (int i = 0; i < v.size(); i++) {
+            for (int i = 0; i < v.size(); i += 9) {
                 t.makeMove(v[i], parado);
                 tmp = puntuarTablero(t);
-                cout << tmp << endl;
+                //cout << tmp << endl;
                 if (i == 0 || tmp > max.first) {
                     max.first = tmp;
                     max.second = i;
@@ -1371,7 +1370,9 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
         if(t.pelota_libre()){
             t.dame_pelota_libre().imprimirPelota();
         }
+        cout << endl;
     }
+
 
     return t.resultado();
 }
