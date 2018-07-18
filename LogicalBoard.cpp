@@ -1360,8 +1360,8 @@ void imprimirJugadas(LogicalBoard &t, int i){
         team2[i].imprimirJugador();
     }
 
-    cout << "--------------------------------------Pelota Sin Posesion------------------------------------" << endl;
     if(t.pelota_libre()){
+        cout << "--------------------------------------Pelota Sin Posesion------------------------------------" << endl;
         t.dame_pelota_libre().imprimirPelota();
     }
 }
@@ -1535,7 +1535,7 @@ int main() {
     //float asd = 1.0;
     vector<pair<int, float>> team_1 = {make_pair(0, quite), make_pair(1, quite), make_pair(2, quite)};
     vector<pair<int, float>> team_2 = {make_pair(3, quite), make_pair(4, quite), make_pair(5, quite)};
-    LogicalBoard tablero(10, 5, team_1, team_2);
+    LogicalBoard tablero(22, 11, team_1, team_2);
 
     vector<par> posA = {make_pair(1, 1), make_pair(2, 1), make_pair(3, 1)};
     vector<par> posB = {make_pair(1, 9), make_pair(1, 8), make_pair(1, 7)};
@@ -1549,20 +1549,16 @@ int main() {
     weights.push_back(quite); // pesos[1]
     weights.push_back(quite); // pesos[2]
 
-//    for (int i = 3; i < 11; ++i){
-//        weights.push_back((i == 3 || i == 5 || i == 7 || i == 8 || i == 10? -1:1) * rand() / float(RAND_MAX));
-//    }
-
     weights.push_back(-0.62); // pesos[3] distancia al arco rival
-    weights.push_back(0.75); // pesos[4] angulo de tiro.
+    weights.push_back(0.65); // pesos[4] angulo de tiro.
     weights.push_back(-0.94); // pesos[5] me metieron un gol.
     weights.push_back(0.92); // pesos[6] hice un gol.
     weights.push_back(-0.57); // pesos[7] distancia al rival con pelota
     weights.push_back(-0.83); // pesos[8] distancia a la pelota libre
-    weights.push_back(0.78); // pesos[9] la pelota yendo al arco
-    weights.push_back(0.74); // pesos[10] hay un rival e la trayectoria de la pelota.
-    Team a(5, 10, 'A', weights, 100);
-    Team b(5, 10, 'B', weights, 100);
+    weights.push_back(0.99); // pesos[9] la pelota yendo al arco
+    weights.push_back(0.94); // pesos[10] hay un rival en la trayectoria de la pelota.
+    Team a(11, 22, 'A', weights, 100);
+    Team b(11, 22, 'B', weights, 100);
 
     par resultado = jugar(a, b, tablero);
 
