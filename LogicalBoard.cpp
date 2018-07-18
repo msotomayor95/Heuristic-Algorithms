@@ -1466,7 +1466,6 @@ vector <vector<float>> populacion() {
 
 
 vector<float> fitnessUno(vector<vector<float> >& poblacion, int& turnos, LogicalBoard& t){
-
     vector<Team> equipos;
     vector<float> puntaje(12, 0);
     for (int i = 0; i < 12; ++i) { //En principio todos los equipos se llaman B, luego cambio a A aquel que va a competir con todos los demas
@@ -1492,11 +1491,43 @@ vector<float> fitnessUno(vector<vector<float> >& poblacion, int& turnos, Logical
     return puntaje;
 }
 
+//fitnessDos suma puntos en funcion de partidos ganados o empatados + la diferencia de goles en caso de ganar
+vector<float> fitnessDos(vector<vector<float>>& poblacion, int& turnos, LogicalBoard& t){
+    vector<Team> equipos;
+    vector<float> puntaje(12, 0);
+    for (int i = 0; i < 12; ++i) { //En principio todos los equipos se llaman B, luego cambio a A aquel que va a competir con todos los demas
+        equipos.push_back(Team(t.filas(), t.columnas(), 'B', poblacion[i], turnos));
+    }
+    for (int i = 0; i < 12; ++i) { //En principio todos los equipos se llaman B, luego cambio a A aquel que va a competir con todos los demas
+        pesos = poblacion[i];
+        Team p(t.filas(), t.columnas(), 'B', pesos, turnos);
+        equipos.push_back(p);
+    }
+    for (int i = 0; i < 12; ++i) {
+        for (int j = i+1; j <12 ; ++j) {
+            equipos[i].cambiarNombre('A');
+            for (int k = 0; k < 19; ++k) {   //Hago jugar a cada par de equipos 20 partidos
+                jugar(equipos[i], equipos[j], t);
+                if(t.winner() == 'A'){  //gano le sumo 3
+                    marcador = t.resultado();
+                    dif_goles = marcador.first - marcador.second;
+                    puntaje[i] += 3 + dif_goles;
+                }else if(t.winner() == 'E'){//empato le sumo 1 y sino no le sumo nada
+                    puntaje[i] += 1;
+                    puntaje[j] += 1;
+                }else{
+                    marcador = t.resultado();
+                    dif_goles = marcador.second - marcador.first;
+                    puntaje[j] += 3 + dif_goles;
+                }
+                dif_goles = 0;
+            }
+        }
 
+    }
+    return puntaje;
+}
 
-
-
-//fitnessDos<float>
 
 int main() {
     srand(time(NULL));
