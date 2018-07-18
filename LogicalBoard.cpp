@@ -450,7 +450,7 @@ public:
 
     }
 
-    void makeTeamMove(vector <Player> team, vector <mov> moves) {
+    void makeTeamMove(vector <Player>& team, vector <mov>& moves) {
         mov player_move;
         for (uint i = 0; i < team.size(); i++) {
             player_move = buscarMov(team[i].p_id(), moves);
@@ -1289,7 +1289,7 @@ public:
             }
         }
         else {
-            for (int i = 0; i < v.size(); i++) {
+            for (int i = 0; i < v.size(); ++i) {
                 t.makeMove(v[i], parado);
                 tmp = puntuarTablero(t);
                 cout << tmp << endl;
