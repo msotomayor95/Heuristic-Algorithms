@@ -476,11 +476,12 @@ public:
 
     }
 
-    void figthBall(Player p_ball, Player p_empty) {
+    void figthBall(Player &p_ball, Player &p_empty) {
         float prob_ball = 1 - p_ball.quite(); // probabilidad de defensa
         float prob_empty = p_empty.quite(); // probabilidad de quite
 
         prob_empty = normalize(prob_ball, prob_empty).second;
+        //auto rando = rand() / (float) RAND_MAX;
 
         if ((rand() / (float) RAND_MAX) <=
             prob_empty) {   //Hace que sacarle la pelota al otro jugador dependa del "azar" (***)
@@ -1492,47 +1493,48 @@ vector<float> fitnessUno(vector<vector<float> >& poblacion, int& turnos, Logical
 }
 
 //fitnessDos suma puntos en funcion de partidos ganados o empatados + la diferencia de goles en caso de ganar
-vector<float> fitnessDos(vector<vector<float>>& poblacion, int& turnos, LogicalBoard& t){
-    vector<Team> equipos;
-    vector<float> puntaje(12, 0);
-    for (int i = 0; i < 12; ++i) { //En principio todos los equipos se llaman B, luego cambio a A aquel que va a competir con todos los demas
-        equipos.push_back(Team(t.filas(), t.columnas(), 'B', poblacion[i], turnos));
-    }
-    for (int i = 0; i < 12; ++i) { //En principio todos los equipos se llaman B, luego cambio a A aquel que va a competir con todos los demas
-        pesos = poblacion[i];
-        Team p(t.filas(), t.columnas(), 'B', pesos, turnos);
-        equipos.push_back(p);
-    }
-    for (int i = 0; i < 12; ++i) {
-        for (int j = i+1; j <12 ; ++j) {
-            equipos[i].cambiarNombre('A');
-            for (int k = 0; k < 19; ++k) {   //Hago jugar a cada par de equipos 20 partidos
-                jugar(equipos[i], equipos[j], t);
-                if(t.winner() == 'A'){  //gano le sumo 3
-                    marcador = t.resultado();
-                    dif_goles = marcador.first - marcador.second;
-                    puntaje[i] += 3 + dif_goles;
-                }else if(t.winner() == 'E'){//empato le sumo 1 y sino no le sumo nada
-                    puntaje[i] += 1;
-                    puntaje[j] += 1;
-                }else{
-                    marcador = t.resultado();
-                    dif_goles = marcador.second - marcador.first;
-                    puntaje[j] += 3 + dif_goles;
-                }
-                dif_goles = 0;
-            }
-        }
-
-    }
-    return puntaje;
-}
+//vector<float> fitnessDos(vector<vector<float>>& poblacion, int& turnos, LogicalBoard& t){
+//    vector<Team> equipos;
+//    vector<float> puntaje(12, 0);
+//    for (int i = 0; i < 12; ++i) { //En principio todos los equipos se llaman B, luego cambio a A aquel que va a competir con todos los demas
+//        equipos.push_back(Team(t.filas(), t.columnas(), 'B', poblacion[i], turnos));
+//    }
+//    for (int i = 0; i < 12; ++i) { //En principio todos los equipos se llaman B, luego cambio a A aquel que va a competir con todos los demas
+//        pesos = poblacion[i];
+//        Team p(t.filas(), t.columnas(), 'B', pesos, turnos);
+//        equipos.push_back(p);
+//    }
+//    for (int i = 0; i < 12; ++i) {
+//        for (int j = i+1; j <12 ; ++j) {
+//            equipos[i].cambiarNombre('A');
+//            for (int k = 0; k < 19; ++k) {   //Hago jugar a cada par de equipos 20 partidos
+//                jugar(equipos[i], equipos[j], t);
+//                if(t.winner() == 'A'){  //gano le sumo 3
+//                    marcador = t.resultado();
+//                    dif_goles = marcador.first - marcador.second;
+//                    puntaje[i] += 3 + dif_goles;
+//                }else if(t.winner() == 'E'){//empato le sumo 1 y sino no le sumo nada
+//                    puntaje[i] += 1;
+//                    puntaje[j] += 1;
+//                }else{
+//                    marcador = t.resultado();
+//                    dif_goles = marcador.second - marcador.first;
+//                    puntaje[j] += 3 + dif_goles;
+//                }
+//                dif_goles = 0;
+//            }
+//        }
+//
+//    }
+//    return puntaje;
+//}
 
 
 int main() {
     srand(time(NULL));
 
     float quite = 0.5;
+    //float asd = 1.0;
     vector<pair<int, float>> team_1 = {make_pair(0, quite), make_pair(1, quite), make_pair(2, quite)};
     vector<pair<int, float>> team_2 = {make_pair(3, quite), make_pair(4, quite), make_pair(5, quite)};
     LogicalBoard tablero(10, 5, team_1, team_2);
@@ -1561,10 +1563,11 @@ int main() {
     weights.push_back(-0.83); // pesos[8] distancia a la pelota libre
     weights.push_back(0.78); // pesos[9] la pelota yendo al arco
     weights.push_back(0.74); // pesos[10] hay un rival e la trayectoria de la pelota.
-    Team a(5, 10, 'A', weights, 10);
-    Team b(5, 10, 'B', weights, 10);
+    Team a(5, 10, 'A', weights, 100);
+    Team b(5, 10, 'B', weights, 100);
 
     par resultado = jugar(a, b, tablero);
+
 
     cout << "Goles de TEAM A: " << resultado.first << endl;
     cout << "Goles de TEAM B: " << resultado.second << endl;
