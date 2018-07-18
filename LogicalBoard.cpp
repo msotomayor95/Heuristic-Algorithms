@@ -1289,11 +1289,7 @@ public:
             }
         }
         else {
-<<<<<<< HEAD
-            for (int i = 0; i < v.size(); i += 9) {
-=======
             for (int i = 0; i < v.size(); ++i) {
->>>>>>> ca2332c0987016b383f91617e9410d347819bd74
                 t.makeMove(v[i], parado);
                 tmp = puntuarTablero(t);
                 //cout << tmp << endl;
