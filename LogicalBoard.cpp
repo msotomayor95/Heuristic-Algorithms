@@ -97,7 +97,8 @@ bool is_neighbour(par &x, vector <par> &v) {
     return esVecino;
 }
 
-vector <par> unir_vectores(vector <par> a, vector <par> b) {
+
+vector<par> unir_vectores(vector<par> a, vector<par> b) {
     for (uint i = 0; i < b.size(); i++) {
         a.push_back(b[i]);
     }
@@ -536,7 +537,7 @@ public:
 
 
 //Asumo que las posiciones dentro de la cancha son validas y que siempre empieza el equipo llamado A a la izquierda de la cancha
-    void startingPositions(vector <par> position_A, vector <par> position_B, char starting) {
+    void startingPositions(vector<par> position_A, vector<par> position_B, char starting) {
         //reseteo el estado anterior, empieza de cero
         posicionesIniciales_A = position_A;
         posicionesIniciales_B = position_B;
@@ -983,7 +984,7 @@ public:
         vector<Player> equipoJ;
 
         equipoJ = t.getitem(nombre);
-        char rival = nombre ? 'A' : 'B';
+        char rival = nombre == 'B' ? 'A' : 'B';
         float quites = pesos[0] * equipoJ[0].quite() + pesos[1] * equipoJ[1].quite() + pesos[2] * equipoJ[2].quite();
         auto p = t.jugador_con_pelota(rival);
         puntaje_final += pesos[7] * distARival(t, p);
@@ -1162,10 +1163,6 @@ public:
         mov movi0;
         vector<Player> equipoJ;
         equipoJ = t.getitem(nombre);
-//        vector<Player> ju_rival = t.getitem('A');
-//        if(nombre == 'A') ju_rival = t.getitem('B');
-//        int i =0;
-//        for (i; !ju_rival[i].tienePelota(); ++i){}
         for (int k = 0; k < 3; ++k) {
             movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(0, 0));
             mov_equipo[k].push_back(movi0);
@@ -1266,6 +1263,7 @@ public:
 
     vector <mov> elegirMov(LogicalBoard &t, vector <vector<mov>> &v) {
         char nom;
+        bool p1 = true;
         nombre == 'A' ? nom = 'B' : nom = 'A';
         auto rivales = t.getitem(nom);
         mov m0;
@@ -1299,6 +1297,7 @@ public:
                     max.second = i;
                 }
                 t.undoMove();
+                p1 = (t.getitem('A')[2].pos_i() == 2) && (t.getitem('A')[2].pos_j() == 5);
             }
         }
         return v[max.second];
@@ -1382,6 +1381,7 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
     for (i; i < match_duration; ++i) {
         teamplay_a = a.generarJugada(t);
         //teamplay_b = b.generarJugada(t);
+
         t.makeMove(teamplay_a, teamplay_b);
 
         imprimirJugadas(t, i+1);
@@ -1474,17 +1474,17 @@ vector<float> fitnessUno(vector<vector<float> >& poblacion, int& turnos, Logical
     for (int i = 0; i < 12; ++i) {
         for (int j = i+1; j <12 ; ++j) {
             equipos[i].cambiarNombre('A');
-                for (int k = 0; k < 19; ++k) {   //Hago jugar a cada par de equipos 20 partidos
-                    jugar(equipos[i], equipos[j], t);
-                    if(t.winner() == 'A'){  //gano le sumo 3
-                        puntaje[i] +=3;
-                    }else if(t.winner() == 'E'){//empato le sumo 1 y sino no le sumo nada
-                        puntaje[i] += 1;
-                        puntaje[j] += 1;
-                    }else{
-                        puntaje[j] += 3;
-                    }
+            for (int k = 0; k < 19; ++k) {   //Hago jugar a cada par de equipos 20 partidos
+                jugar(equipos[i], equipos[j], t);
+                if(t.winner() == 'A'){  //gano le sumo 3
+                    puntaje[i] +=3;
+                }else if(t.winner() == 'E'){//empato le sumo 1 y sino no le sumo nada
+                    puntaje[i] += 1;
+                    puntaje[j] += 1;
+                }else{
+                    puntaje[j] += 3;
                 }
+            }
         }
 
     }
