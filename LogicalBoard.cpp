@@ -873,18 +873,20 @@ public:
         return suma_total;
     };
 
-    float distARival(LogicalBoard &t, par &rival) {
+    float distARival(LogicalBoard &t, par &rival, float resta) {
         float tmp = 0;
-        float min = 0;
+        float suma_total = 0;
         vector<Player> equipoJ;
         equipoJ = t.getitem(nombre);
         for (int i = 0; i < 3; ++i) {
-            tmp = pow((equipoJ[i].pos_i() - rival.first), 2) + pow((equipoJ[i].pos_j() - rival.second), 2);
-            tmp = sqrt(tmp);
-            if (i == 0 || tmp < min) min = tmp;
+            if (resta != equipoJ[i].quite()) {
+                tmp = pow((equipoJ[i].pos_i() - rival.first), 2) + pow((equipoJ[i].pos_j() - rival.second), 2);
+                tmp = sqrt(tmp);
+                suma_total += tmp;
+            }
         }
-        min = min / (filas + columnas);
-        return min;
+        suma_total = suma_total / (2*(filas + columnas));
+        return suma_total;
     };
 
     float distMinAPelota(LogicalBoard &t) { // toma la distancia minima de un jugador a la pelota
@@ -980,15 +982,19 @@ public:
     };
 
     float puntuar_defensiva(LogicalBoard &t) {
-
         float puntaje_final = 0;
         vector<Player> equipoJ;
-
         equipoJ = t.getitem(nombre);
         char rival = nombre == 'B' ? 'A' : 'B';
-        float quites = pesos[0] * equipoJ[0].quite() + pesos[1] * equipoJ[1].quite() + pesos[2] * equipoJ[2].quite();
+        float min = 0;
+        float quites = 0;
+        for (int i = 0; i < 3; ++i) {
+            quites += pesos[i];
+            if (i == 0 || min > pesos[i]) min = pesos[i];
+        }
+        quites -= min;
         auto p = t.jugador_con_pelota(rival);
-        puntaje_final += pesos[7] * distARival(t, p);
+        puntaje_final += pesos[7] * distARival(t, p, min);
         puntaje_final += quites + pesos[6] * (int) golAFavor(t);
         return puntaje_final;
     };
@@ -1538,7 +1544,7 @@ int main() {
     //float asd = 1.0;
     vector<pair<int, float>> team_1 = {make_pair(0, quite), make_pair(1, quite), make_pair(2, quite)};
     vector<pair<int, float>> team_2 = {make_pair(3, quite), make_pair(4, quite), make_pair(5, quite)};
-    LogicalBoard tablero(22, 11, team_1, team_2);
+    LogicalBoard tablero(10, 5, team_1, team_2);
 
     vector<par> posA = {make_pair(1, 1), make_pair(2, 1), make_pair(3, 1)};
     vector<par> posB = {make_pair(1, 9), make_pair(1, 8), make_pair(1, 7)};
@@ -1560,8 +1566,8 @@ int main() {
     weights.push_back(-0.83); // pesos[8] distancia a la pelota libre
     weights.push_back(0.99); // pesos[9] la pelota yendo al arco
     weights.push_back(0.94); // pesos[10] hay un rival en la trayectoria de la pelota.
-    Team a(11, 22, 'A', weights, 100);
-    Team b(11, 22, 'B', weights, 100);
+    Team a(5, 10, 'A', weights, 100);
+    Team b(5, 10, 'B', weights, 100);
 
     par resultado = jugar(a, b, tablero);
 
