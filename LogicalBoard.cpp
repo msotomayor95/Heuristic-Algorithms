@@ -702,10 +702,9 @@ public:
 
     void getState() {
         if (hayPelotaLibre) {
+
             last_stateBall = free_ball;
             hayEstadoAnteriorBall = true;
-        } else {
-
         }
         estabaLibre = hayPelotaLibre;
         last_statePlayer = make_pair(team_A, team_B);
