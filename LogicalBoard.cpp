@@ -97,6 +97,7 @@ bool is_neighbour(par &x, vector <par> &v) {
     return esVecino;
 }
 
+
 vector<par> unir_vectores(vector<par> a, vector<par> b) {
     for (uint i = 0; i < b.size(); i++) {
         a.push_back(b[i]);
@@ -127,8 +128,7 @@ public:
         }
     }
 
-    par
-    finalPosition() { //te da la posicion final de la pelota para el movimiento dado (podria tener que verificar si tiene o no movimiento la pelota)
+    par finalPosition() { //te da la posicion final de la pelota para el movimiento dado (podria tener que verificar si tiene o no movimiento la pelota)
         par move = moves[movement.first];
         int steps = movement.second;
         par res = make_pair(pel_i + 2 * steps * move.first, pel_j + 2 * steps * move.second);
@@ -539,8 +539,6 @@ public:
 //Asumo que las posiciones dentro de la cancha son validas y que siempre empieza el equipo llamado A a la izquierda de la cancha
     void startingPositions(vector<par> position_A, vector<par> position_B, char starting) {
         //reseteo el estado anterior, empieza de cero
-        hayEstadoAnteriorBall = false;
-        hayEstadoAnteriorPlayer = false;
         posicionesIniciales_A = position_A;
         posicionesIniciales_B = position_B;
         // Saco la pelota del juego y pongo a los jugadores en su lugar
@@ -741,6 +739,9 @@ public:
     void reset(vector <par> position_A,
                vector <par> position_B) {  //reinicia el juego, siempre inicia el equipo A al comienzo del partido
         startingPositions(position_A, position_B, 'A');
+        hayEstadoAnteriorBall = false;
+        hayEstadoAnteriorPlayer = false;
+
         score = make_pair(0, 0);
     }
 
@@ -983,7 +984,7 @@ public:
         vector<Player> equipoJ;
 
         equipoJ = t.getitem(nombre);
-        char rival = nombre ? 'A' : 'B';
+        char rival = nombre == 'B' ? 'A' : 'B';
         float quites = pesos[0] * equipoJ[0].quite() + pesos[1] * equipoJ[1].quite() + pesos[2] * equipoJ[2].quite();
         auto p = t.jugador_con_pelota(rival);
         puntaje_final += pesos[7] * distARival(t, p);
@@ -1162,10 +1163,6 @@ public:
         mov movi0;
         vector<Player> equipoJ;
         equipoJ = t.getitem(nombre);
-//        vector<Player> ju_rival = t.getitem('A');
-//        if(nombre == 'A') ju_rival = t.getitem('B');
-//        int i =0;
-//        for (i; !ju_rival[i].tienePelota(); ++i){}
         for (int k = 0; k < 3; ++k) {
             movi0 = make_tuple(equipoJ[k].p_id(), "MOVIMIENTO", make_pair(0, 0));
             mov_equipo[k].push_back(movi0);
@@ -1290,7 +1287,8 @@ public:
             }
         }
         else {
-            for (int i = 0; i < v.size(); ++i) {
+            int i = 0;
+            for (i; i < v.size(); ++i) {
                 t.makeMove(v[i], parado);
                 tmp = puntuarTablero(t);
                 //cout << tmp << endl;
@@ -1323,6 +1321,10 @@ public:
         return turnos;
     }
 
+    void cambiarNombre(char nom){
+        nombre = nom;
+    }
+
 private:
     //podria cambiar la distancia de cada uno
     int filas;
@@ -1342,6 +1344,27 @@ private:
     vector<float> pesos;
 };
 
+void imprimirJugadas(LogicalBoard &t, int i){
+    vector<Player> team1 = t.getitem('A');
+    vector<Player> team2 = t.getitem('B');
+
+    cout << "-----------------------------------------Jugada "<< i <<"-----------------------------------" << endl;
+
+    cout << "-------------------------------------------Team A------------------------------------" << endl;
+    for (int i = 0; i < 3; ++i) {
+        team1[i].imprimirJugador();
+    }
+    cout << "-------------------------------------------Team B------------------------------------" << endl;
+    for (int i = 0; i < 3; ++i) {
+        team2[i].imprimirJugador();
+    }
+
+    cout << "--------------------------------------Pelota Sin Posesion------------------------------------" << endl;
+    if(t.pelota_libre()){
+        t.dame_pelota_libre().imprimirPelota();
+    }
+}
+
 par jugar(Team &a, Team &b, LogicalBoard &t) {
     vector<mov> teamplay_a;
 
@@ -1352,31 +1375,16 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
 
     int match_duration = a.dameTurnos();
 
-    for (auto i = 0; i < match_duration; ++i) {
+    imprimirJugadas(t, 0);
+
+    int i = 0;
+    for (i; i < match_duration; ++i) {
         teamplay_a = a.generarJugada(t);
         //teamplay_b = b.generarJugada(t);
-        vector<Player> team1 = t.getitem('A');
-        vector<Player> team2 = t.getitem('B');
 
-        if(i == 4){
-            cout << "cagandose" << endl;
-        }
         t.makeMove(teamplay_a, teamplay_b);
 
-        team1 = t.getitem('A');
-        team2 = t.getitem('B');
-
-        for (int i = 0; i < 3; ++i) {
-            team1[i].imprimirJugador();
-        }
-        for (int i = 0; i < 3; ++i) {
-            team2[i].imprimirJugador();
-        }
-
-        if(t.pelota_libre()){
-            t.dame_pelota_libre().imprimirPelota();
-        }
-        cout << endl;
+        imprimirJugadas(t, i+1);
     }
 
 
@@ -1456,9 +1464,36 @@ vector <vector<float>> populacion() {
     return poblacion;
 }
 
-vector<float> fitnessUno(vector <vector<float>> &poblacion) {
 
+vector<float> fitnessUno(vector<vector<float> >& poblacion, int& turnos, LogicalBoard& t){
+
+    vector<Team> equipos;
+    vector<float> puntaje(12, 0);
+    for (int i = 0; i < 12; ++i) { //En principio todos los equipos se llaman B, luego cambio a A aquel que va a competir con todos los demas
+        equipos.push_back(Team(t.filas(), t.columnas(), 'B', poblacion[i], turnos));
+    }
+    for (int i = 0; i < 12; ++i) {
+        for (int j = i+1; j <12 ; ++j) {
+            equipos[i].cambiarNombre('A');
+            for (int k = 0; k < 19; ++k) {   //Hago jugar a cada par de equipos 20 partidos
+                jugar(equipos[i], equipos[j], t);
+                if(t.winner() == 'A'){  //gano le sumo 3
+                    puntaje[i] +=3;
+                }else if(t.winner() == 'E'){//empato le sumo 1 y sino no le sumo nada
+                    puntaje[i] += 1;
+                    puntaje[j] += 1;
+                }else{
+                    puntaje[j] += 3;
+                }
+            }
+        }
+
+    }
+    return puntaje;
 }
+
+
+
 
 
 //fitnessDos<float>
