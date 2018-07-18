@@ -1542,7 +1542,7 @@ int main() {
 
     float quite = 0.5;
     //float asd = 1.0;
-    vector<pair<int, float>> team_1 = {make_pair(0, quite), make_pair(1, quite), make_pair(2, quite)};
+    vector<pair<int, float>> team_1 = {make_pair(0, 0.3), make_pair(1, 0.8), make_pair(2, 0.7)};
     vector<pair<int, float>> team_2 = {make_pair(3, quite), make_pair(4, quite), make_pair(5, quite)};
     LogicalBoard tablero(10, 5, team_1, team_2);
 
@@ -1566,8 +1566,8 @@ int main() {
     weights.push_back(-0.83); // pesos[8] distancia a la pelota libre
     weights.push_back(0.99); // pesos[9] la pelota yendo al arco
     weights.push_back(0.94); // pesos[10] hay un rival en la trayectoria de la pelota.
-    Team a(5, 10, 'A', weights, 100);
-    Team b(5, 10, 'B', weights, 100);
+    Team a(5, 10, 'A', weights, 25);
+    Team b(5, 10, 'B', weights, 25);
 
     par resultado = jugar(a, b, tablero);
 
