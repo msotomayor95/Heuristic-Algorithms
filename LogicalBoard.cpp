@@ -97,7 +97,7 @@ bool is_neighbour(par &x, vector <par> &v) {
     return esVecino;
 }
 
-vector <par> unir_vectores(vector <par> &a, vector <par> &b) {
+vector<par> unir_vectores(vector<par> a, vector<par> b) {
     for (uint i = 0; i < b.size(); i++) {
         a.push_back(b[i]);
     }
@@ -537,7 +537,7 @@ public:
 
 
 //Asumo que las posiciones dentro de la cancha son validas y que siempre empieza el equipo llamado A a la izquierda de la cancha
-    void startingPositions(vector <par> position_A, vector <par> position_B, char starting) {
+    void startingPositions(vector<par> position_A, vector<par> position_B, char starting) {
         //reseteo el estado anterior, empieza de cero
         hayEstadoAnteriorBall = false;
         hayEstadoAnteriorPlayer = false;
@@ -1266,6 +1266,7 @@ public:
 
     vector <mov> elegirMov(LogicalBoard &t, vector <vector<mov>> &v) {
         char nom;
+        bool p1 = true;
         nombre == 'A' ? nom = 'B' : nom = 'A';
         auto rivales = t.getitem(nom);
         mov m0;
@@ -1298,6 +1299,7 @@ public:
                     max.second = i;
                 }
                 t.undoMove();
+                p1 = (t.getitem('A')[2].pos_i() == 2) && (t.getitem('A')[2].pos_j() == 5);
             }
         }
         return v[max.second];
@@ -1356,6 +1358,9 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
         vector<Player> team1 = t.getitem('A');
         vector<Player> team2 = t.getitem('B');
 
+        if(i == 4){
+            cout << "cagandose" << endl;
+        }
         t.makeMove(teamplay_a, teamplay_b);
 
         team1 = t.getitem('A');
