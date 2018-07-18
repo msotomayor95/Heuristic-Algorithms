@@ -881,18 +881,20 @@ public:
         return suma_total;
     };
 
-    float distARival(LogicalBoard &t, par &rival) {
+    float distARival(LogicalBoard &t, par &rival, int j) {
         float tmp = 0;
-        float min = 0;
+        float suma_total = 0;
         vector<Player> equipoJ;
         equipoJ = t.getitem(nombre);
         for (int i = 0; i < 3; ++i) {
-            tmp = pow((equipoJ[i].pos_i() - rival.first), 2) + pow((equipoJ[i].pos_j() - rival.second), 2);
-            tmp = sqrt(tmp);
-            if (i == 0 || tmp < min) min = tmp;
+            if (j != i) {
+                tmp = pow((equipoJ[i].pos_i() - rival.first), 2) + pow((equipoJ[i].pos_j() - rival.second), 2);
+                tmp = sqrt(tmp);
+                suma_total += tmp;
+            }
         }
-        min = min / (filas + columnas);
-        return min;
+        suma_total = suma_total / (2*(filas + columnas));
+        return suma_total;
     };
 
     float distMinAPelota(LogicalBoard &t) { // toma la distancia minima de un jugador a la pelota
@@ -949,7 +951,7 @@ public:
             if (trayectoria[i].first == i_ju && trayectoria[i].second == j_ju) return 1;
             int i_ri = t.getitem(rival)[i].pos_i();
             int j_ri = t.getitem(rival)[i].pos_j();
-            if (trayectoria[i].first == i_ri && trayectoria[i].second == j_ri) return 0;
+            if (trayectoria[i].first == i_ri && trayectoria[i].second == j_ri) return (-1);
         }
 
         return 0;
@@ -988,15 +990,19 @@ public:
     };
 
     float puntuar_defensiva(LogicalBoard &t) {
-
         float puntaje_final = 0;
         vector<Player> equipoJ;
-
         equipoJ = t.getitem(nombre);
         char rival = nombre == 'B' ? 'A' : 'B';
-        float quites = pesos[0] * equipoJ[0].quite() + pesos[1] * equipoJ[1].quite() + pesos[2] * equipoJ[2].quite();
+        int ind_min = 0;
+        float quites = 0;
+        for (int i = 0; i < 3; ++i) {
+            quites += pesos[i];
+            if (i == 0 || pesos[ind_min] > pesos[i]) ind_min = pesos[i];
+        }
+        quites -= pesos[ind_min];
         auto p = t.jugador_con_pelota(rival);
-        puntaje_final += pesos[7] * distARival(t, p);
+        puntaje_final += pesos[7] * distARival(t, p, ind_min);
         puntaje_final += quites + pesos[6] * (int) golAFavor(t);
         return puntaje_final;
     };
@@ -1349,7 +1355,10 @@ private:
     // en la posicion 7 esta la distancia al rival con pelota NEGATIVO
     // en la posicion 8 esta la distancia a la pelota libre, (negativo).
     // en la posicion 9 la pelota esta yendo al arco
-    // en la posicion 10 hay un rival en la trayectoria de la pelota, tiene que ser valor negativo
+    // en la posicion 10 hay un rival en la trayectoria de la pelota
+
+    //quizas estaria bueno tener un peso mas y separar la funcion que devuelve si un rival o yo estoy en
+    //trayectoria
     vector<float> pesos;
 };
 
@@ -1368,8 +1377,8 @@ void imprimirJugadas(LogicalBoard &t, int i){
         team2[i].imprimirJugador();
     }
 
-    cout << "--------------------------------------Pelota Sin Posesion------------------------------------" << endl;
     if(t.pelota_libre()){
+        cout << "--------------------------------------Pelota Sin Posesion------------------------------------" << endl;
         t.dame_pelota_libre().imprimirPelota();
     }
 }
@@ -1628,18 +1637,14 @@ int main() {
     weights.push_back(quite); // pesos[1]
     weights.push_back(quite); // pesos[2]
 
-//    for (int i = 3; i < 11; ++i){
-//        weights.push_back((i == 3 || i == 5 || i == 7 || i == 8 || i == 10? -1:1) * rand() / float(RAND_MAX));
-//    }
-
     weights.push_back(-0.62); // pesos[3] distancia al arco rival
-    weights.push_back(0.75); // pesos[4] angulo de tiro.
+    weights.push_back(0.65); // pesos[4] angulo de tiro.
     weights.push_back(-0.94); // pesos[5] me metieron un gol.
     weights.push_back(0.92); // pesos[6] hice un gol.
     weights.push_back(-0.57); // pesos[7] distancia al rival con pelota
     weights.push_back(-0.83); // pesos[8] distancia a la pelota libre
-    weights.push_back(0.78); // pesos[9] la pelota yendo al arco
-    weights.push_back(0.74); // pesos[10] hay un rival e la trayectoria de la pelota.
+    weights.push_back(0.99); // pesos[9] la pelota yendo al arco
+    weights.push_back(0.94); // pesos[10] hay un rival en la trayectoria de la pelota.
     Team a(5, 10, 'A', weights, 100);
     Team b(5, 10, 'B', weights, 100);
 
