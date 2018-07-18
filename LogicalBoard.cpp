@@ -97,7 +97,7 @@ bool is_neighbour(par &x, vector <par> &v) {
     return esVecino;
 }
 
-vector <par> unir_vectores(vector <par> &a, vector <par> &b) {
+vector <par> unir_vectores(vector <par> a, vector <par> b) {
     for (uint i = 0; i < b.size(); i++) {
         a.push_back(b[i]);
     }
@@ -538,8 +538,6 @@ public:
 //Asumo que las posiciones dentro de la cancha son validas y que siempre empieza el equipo llamado A a la izquierda de la cancha
     void startingPositions(vector <par> position_A, vector <par> position_B, char starting) {
         //reseteo el estado anterior, empieza de cero
-        hayEstadoAnteriorBall = false;
-        hayEstadoAnteriorPlayer = false;
         posicionesIniciales_A = position_A;
         posicionesIniciales_B = position_B;
         // Saco la pelota del juego y pongo a los jugadores en su lugar
@@ -740,6 +738,9 @@ public:
     void reset(vector <par> position_A,
                vector <par> position_B) {  //reinicia el juego, siempre inicia el equipo A al comienzo del partido
         startingPositions(position_A, position_B, 'A');
+        hayEstadoAnteriorBall = false;
+        hayEstadoAnteriorPlayer = false;
+
         score = make_pair(0, 0);
     }
 
@@ -1288,7 +1289,8 @@ public:
             }
         }
         else {
-            for (int i = 0; i < v.size(); ++i) {
+            int i = 0;
+            for (i; i < v.size(); ++i) {
                 t.makeMove(v[i], parado);
                 tmp = puntuarTablero(t);
                 //cout << tmp << endl;
@@ -1372,7 +1374,8 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
 
     imprimirJugadas(t, 0);
 
-    for (auto i = 0; i < match_duration; ++i) {
+    int i = 0;
+    for (i; i < match_duration; ++i) {
         teamplay_a = a.generarJugada(t);
         //teamplay_b = b.generarJugada(t);
         t.makeMove(teamplay_a, teamplay_b);
