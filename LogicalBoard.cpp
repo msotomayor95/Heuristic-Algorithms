@@ -476,11 +476,12 @@ public:
 
     }
 
-    void figthBall(Player p_ball, Player p_empty) {
+    void figthBall(Player &p_ball, Player &p_empty) {
         float prob_ball = 1 - p_ball.quite(); // probabilidad de defensa
         float prob_empty = p_empty.quite(); // probabilidad de quite
 
         prob_empty = normalize(prob_ball, prob_empty).second;
+        //auto rando = rand() / (float) RAND_MAX;
 
         if ((rand() / (float) RAND_MAX) <=
             prob_empty) {   //Hace que sacarle la pelota al otro jugador dependa del "azar" (***)
@@ -1526,10 +1527,12 @@ vector<float> fitnessDos(vector<vector<float>>& poblacion, int& turnos, LogicalB
 }
 
 
+
 int main() {
     srand(time(NULL));
 
     float quite = 0.5;
+    //float asd = 1.0;
     vector<pair<int, float>> team_1 = {make_pair(0, quite), make_pair(1, quite), make_pair(2, quite)};
     vector<pair<int, float>> team_2 = {make_pair(3, quite), make_pair(4, quite), make_pair(5, quite)};
     LogicalBoard tablero(10, 5, team_1, team_2);
@@ -1558,10 +1561,11 @@ int main() {
     weights.push_back(-0.83); // pesos[8] distancia a la pelota libre
     weights.push_back(0.78); // pesos[9] la pelota yendo al arco
     weights.push_back(0.74); // pesos[10] hay un rival e la trayectoria de la pelota.
-    Team a(5, 10, 'A', weights, 10);
-    Team b(5, 10, 'B', weights, 10);
+    Team a(5, 10, 'A', weights, 100);
+    Team b(5, 10, 'B', weights, 100);
 
     par resultado = jugar(a, b, tablero);
+
 
     cout << "Goles de TEAM A: " << resultado.first << endl;
     cout << "Goles de TEAM B: " << resultado.second << endl;
