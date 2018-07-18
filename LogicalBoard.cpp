@@ -127,8 +127,7 @@ public:
         }
     }
 
-    par
-    finalPosition() { //te da la posicion final de la pelota para el movimiento dado (podria tener que verificar si tiene o no movimiento la pelota)
+    par finalPosition() { //te da la posicion final de la pelota para el movimiento dado (podria tener que verificar si tiene o no movimiento la pelota)
         par move = moves[movement.first];
         int steps = movement.second;
         par res = make_pair(pel_i + 2 * steps * move.first, pel_j + 2 * steps * move.second);
@@ -1292,7 +1291,6 @@ public:
             for (int i = 0; i < v.size(); ++i) {
                 t.makeMove(v[i], parado);
                 tmp = puntuarTablero(t);
-                cout << tmp << endl;
                 if (i == 0 || tmp > max.first) {
                     max.first = tmp;
                     max.second = i;
@@ -1340,6 +1338,27 @@ private:
     vector<float> pesos;
 };
 
+void imprimirJugadas(LogicalBoard &t, int i){
+    vector<Player> team1 = t.getitem('A');
+    vector<Player> team2 = t.getitem('B');
+
+    cout << "-----------------------------------------Jugada "<< i <<"-----------------------------------" << endl;
+
+    cout << "-------------------------------------------Team A------------------------------------" << endl;
+    for (int i = 0; i < 3; ++i) {
+        team1[i].imprimirJugador();
+    }
+    cout << "-------------------------------------------Team B------------------------------------" << endl;
+    for (int i = 0; i < 3; ++i) {
+        team2[i].imprimirJugador();
+    }
+
+    cout << "--------------------------------------Pelota Sin Posesion------------------------------------" << endl;
+    if(t.pelota_libre()){
+        t.dame_pelota_libre().imprimirPelota();
+    }
+}
+
 par jugar(Team &a, Team &b, LogicalBoard &t) {
     vector<mov> teamplay_a;
 
@@ -1350,27 +1369,14 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
 
     int match_duration = a.dameTurnos();
 
+    imprimirJugadas(t, 0);
+
     for (auto i = 0; i < match_duration; ++i) {
         teamplay_a = a.generarJugada(t);
         //teamplay_b = b.generarJugada(t);
-        vector<Player> team1 = t.getitem('A');
-        vector<Player> team2 = t.getitem('B');
-
         t.makeMove(teamplay_a, teamplay_b);
 
-        team1 = t.getitem('A');
-        team2 = t.getitem('B');
-
-        for (int i = 0; i < 3; ++i) {
-            team1[i].imprimirJugador();
-        }
-        for (int i = 0; i < 3; ++i) {
-            team2[i].imprimirJugador();
-        }
-
-        if(t.pelota_libre()){
-            t.dame_pelota_libre().imprimirPelota();
-        }
+        imprimirJugadas(t, i+1);
     }
 
     return t.resultado();
