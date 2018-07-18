@@ -1322,6 +1322,10 @@ public:
         return turnos;
     }
 
+    void cambiarNombre(char nom){
+        nombre = nom;
+    }
+
 private:
     //podria cambiar la distancia de cada uno
     int filas;
@@ -1460,9 +1464,36 @@ vector <vector<float>> populacion() {
     return poblacion;
 }
 
-vector<float> fitnessUno(vector <vector<float>> &poblacion) {
 
+vector<float> fitnessUno(vector<vector<float> >& poblacion, int& turnos, LogicalBoard& t){
+
+    vector<Team> equipos(12);
+    vector<float> puntaje(12, 0);
+    for (int i = 0; i < 12; ++i) { //En principio todos los equipos se llaman B, luego cambio a A aquel que va a competir con todos los demas
+        equipos.push_back(Team(t.filas(), t.columnas(), 'B', poblacion[i], turnos));
+    }
+    for (int i = 0; i < 12; ++i) {
+        for (int j = i+1; j <12 ; ++j) {
+            equipos[i].cambiarNombre('A');
+                for (int k = 0; k < 19; ++k) {   //Hago jugar a cada par de equipos 20 partidos
+                    jugar(equipos[i], equipos[j], t);
+                    if(t.winner() == 'A'){  //gano le sumo 3
+                        puntaje[i] +=3;
+                    }else if(t.winner() == 'E'){//empato le sumo 1 y sino no le sumo nada
+                        puntaje[i] += 1;
+                        puntaje[j] += 1;
+                    }else{
+                        puntaje[j] += 3;
+                    }
+                }
+        }
+
+    }
+    return puntaje;
 }
+
+
+
 
 
 //fitnessDos<float>
