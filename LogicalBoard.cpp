@@ -2,7 +2,6 @@
 #define Practico namespace
 #define III std;
 #include <iostream>
-#include <vector>
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
@@ -16,7 +15,7 @@
 #include <climits>
 #include <assert.h>
 #include <math.h>
-
+#include <vector>
 
 Trabajo Practico III
 
@@ -875,7 +874,8 @@ public:
 
     float distMinAPelota(LogicalBoard& t){ // toma la distancia minima de un jugador a la pelota
         float distancia = 0;
-        int p_i, p_j, min;
+        int p_i, p_j;
+        float min;
         p_i = t.dame_pelota_libre().posPel_i();
         p_j = t.dame_pelota_libre().posPel_j();
         vector<Player> equipoJ;
@@ -1295,8 +1295,12 @@ public:
         }
         else{
                 for (int i = 0; i < v.size(); ++i) {
+                    if(i % 9 == 0) {
+                        int plin = 0;
+                    }
                     t.makeMove(v[i], parado);
                     tmp = puntuarTablero(t);
+                    cout << tmp << endl;
                     if (i == 0 || tmp > max.first){
                         max.first = tmp;
                         max.second = i;
@@ -1362,19 +1366,19 @@ par jugar(Team &a, Team &b, LogicalBoard& t){
 
         t.makeMove(teamplay_a, teamplay_b);
 
-//        team1 = t.getitem('A');
-//        team2 = t.getitem('B');
+        team1 = t.getitem('A');
+        team2 = t.getitem('B');
 
-//        for (int i = 0; i < 3; ++i) {
-//            team1[i].imprimirJugador();
-//        }
-//        for (int i = 0; i < 3; ++i) {
-//            team2[i].imprimirJugador();
-//        }
-//
-//        if(t.pelota_libre()){
-//            t.dame_pelota_libre().imprimirPelota();
-//        }
+        for (int i = 0; i < 3; ++i) {
+            team1[i].imprimirJugador();
+        }
+        for (int i = 0; i < 3; ++i) {
+            team2[i].imprimirJugador();
+        }
+
+        if(t.pelota_libre()){
+            t.dame_pelota_libre().imprimirPelota();
+        }
     }
 
     return t.resultado();
