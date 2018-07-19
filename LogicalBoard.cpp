@@ -97,7 +97,6 @@ bool is_neighbour(par &x, vector <par> &v) {
     return esVecino;
 }
 
-
 vector<par> unir_vectores(vector<par> a, vector<par> b) {
     for (uint i = 0; i < b.size(); i++) {
         a.push_back(b[i]);
@@ -1375,13 +1374,17 @@ void imprimirJugadas(LogicalBoard &t, int i){
     }
 }
 
+void imprimirPesos(vector<float> &weights){
+    cout << '[ ';
+    for (auto i = 0; i < weights.size(); i++){
+        i != weights.size()-1? cout << weights[i] << ', ':cout << weights[i] << "]";
+    }
+    cout << endl;
+}
+
 par jugar(Team &a, Team &b, LogicalBoard &t) {
     vector<mov> teamplay_a;
-
-    par m = make_pair(0, 0);
-    vector<mov> teamplay_b = {make_tuple(3, "MOVIMIENTO", m),
-                              make_tuple(4, "MOVIMIENTO", m),
-                              make_tuple(5, "MOVIMIENTO", m)};
+    vector<mov> teamplay_b;
 
     int match_duration = a.dameTurnos();
 
@@ -1390,13 +1393,12 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
     int i = 0;
     for (i; i < match_duration; ++i) {
         teamplay_a = a.generarJugada(t);
-        //teamplay_b = b.generarJugada(t);
+        teamplay_b = b.generarJugada(t);
 
         t.makeMove(teamplay_a, teamplay_b);
 
         imprimirJugadas(t, i+1);
     }
-
 
     return t.resultado();
 }
@@ -1434,7 +1436,7 @@ vector<float> campOff(Team &original, LogicalBoard &t) {
                                 single.push_back(original.damePesos()[k1]);
                             }
 
-                            Team b(5, 10, 'B', single, original.dameTurnos());
+                            Team b(15, 40, 'B', single, original.dameTurnos());
                             int cantGanadas = 0;
                             par res;
                             for (int l1 = 0; l1 < 20; ++l1) {
@@ -1442,22 +1444,27 @@ vector<float> campOff(Team &original, LogicalBoard &t) {
                                 if (res.first < res.second) cantGanadas++;
                             }
                             meGanaron = cantGanadas >= 15;
+                            if (meGanaron) return single;
                         }
                     }
                 }
             }
         }
     }
-    return single;
+    return original.damePesos();
 }
 
 Team compLocal(Team &inicial, LogicalBoard &t) {
     int i = 0;
-    inicial.damePesos() = campOff(inicial, t);
+    while (i < 200) {
+        inicial.damePesos() = campOff(inicial, t);
+        imprimirPesos(inicial.damePesos());
+        i++;
+    }
+    return inicial;
     ///aca van a jugar
     //aca me gano uno
 }
-
 
 vector <vector<float>> populacion() {
     vector<vector<float>> poblacion(12);
@@ -1473,7 +1480,6 @@ vector <vector<float>> populacion() {
     }
     return poblacion;
 }
-
 
 vector<float> fitnessUno(vector<vector<float> >& poblacion, int& turnos, LogicalBoard& t){
     vector<Team> equipos;
@@ -1536,17 +1542,16 @@ vector<float> fitnessDos(vector<vector<float>>& poblacion, int& turnos, LogicalB
 }
 
 
-
 int main() {
     srand(time(NULL));
 
     float quite = 0.5;
     //float asd = 1.0;
-    vector<pair<int, float>> team_1 = {make_pair(0, 0.5), make_pair(1, 0.5), make_pair(2, 0.5)};
+    vector<pair<int, float>> team_1 = {make_pair(0, 0.2), make_pair(1, 0.7), make_pair(2, 0.8)};
     vector<pair<int, float>> team_2 = {make_pair(3, quite), make_pair(4, quite), make_pair(5, quite)};
-    LogicalBoard tablero(10, 5, team_1, team_2);
+    LogicalBoard tablero(40, 15, team_1, team_2);
 
-    vector<par> posA = {make_pair(1, 1), make_pair(2, 1), make_pair(3, 1)};
+    vector<par> posA = {make_pair(7, 11), make_pair(6, 11), make_pair(8, 11)};
     vector<par> posB = {make_pair(1, 9), make_pair(1, 8), make_pair(1, 7)};
     tablero.reset(posA, posB);
 
@@ -1566,11 +1571,11 @@ int main() {
     weights.push_back(-0.83); // pesos[8] distancia a la pelota libre
     weights.push_back(0.99); // pesos[9] la pelota yendo al arco
     weights.push_back(0.94); // pesos[10] hay un rival en la trayectoria de la pelota.
-    Team a(5, 10, 'A', weights, 100);
-    Team b(5, 10, 'B', weights, 100);
+
+    Team a(15, 40, 'A', weights, 100);
+    Team b(15, 40, 'B', weights, 100);
 
     par resultado = jugar(a, b, tablero);
-
 
     cout << "Goles de TEAM A: " << resultado.first << endl;
     cout << "Goles de TEAM B: " << resultado.second << endl;
