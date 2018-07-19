@@ -1000,8 +1000,10 @@ public:
         //metodo que llama a la pos del team
         vector<Player> equipoJ;
         equipoJ = t.getitem(nombre);
-        float esquiva = pesos[0] * (1 - equipoJ[0].quite()) + pesos[1] * (1 - equipoJ[1].quite()) +
-                        pesos[2] * (1 - equipoJ[2].quite());
+        float esquiva = 0;
+        for (int i = 0; i < 3; ++i) {
+            if(equipoJ[i].tienePelota()) esquiva = (1-equipoJ[i].quite());
+        }
         puntaje_final += pesos[3] * distAlArco(t) + pesos[4] * anguloDeTiro(t);
         puntaje_final += esquiva + pesos[5] * (int) golContra(t);
         return puntaje_final;
@@ -1016,7 +1018,7 @@ public:
         float quites = 0;
         for (int i = 0; i < 3; ++i) {
             quites += pesos[i];
-            if (i == 0 || pesos[ind_min] > pesos[i]) ind_min = pesos[i];
+            if (i == 0 || pesos[ind_min] > pesos[i]) ind_min = i;
         }
         quites -= pesos[ind_min];
         auto p = t.jugador_con_pelota(rival);
@@ -1438,7 +1440,7 @@ vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector
     vector<vector<float>> pv(6);
     vector<float> single;
     float k;
-    int contando = 0;
+    int contando = 1;
     for (int i = 0; i < 6; ++i) {
         k = original.damePesos()[i];
         pv[i].push_back(k);
@@ -1475,14 +1477,19 @@ vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector
                                 t.reset(posA, posB);
                                 Team b(original.dameFilas(), original.dameColumnas(), 'B', single, original.dameTurnos());
                                 for (int l1 = 0; l1 < 20; ++l1) {
-                                    jugar(original, b, t);
+                                    par r = jugar(original, b, t);
                                     if (t.winner() == 'B') cantGanadas++;
                                     t.reset(posA, posB);
-                                    cout << "iteracion numero : " << l1 << endl;
+                                    //cout << "iteracion numero: " << l1 << endl;
+                                    //cout << "el res es: " << r.first << ", " << r.second << endl;
                                 }
-                                if(cantGanadas >= 15) return single;
+                                cout << "termino el partido: " << contando << endl;
+                                cout << "El equipo B gano: " << cantGanadas << endl;
                                 cantGanadas = 0;
+                                if(cantGanadas >= 15) return single;
 
+
+                                contando++;
                             }
                         }
                     }
@@ -1661,10 +1668,10 @@ int main() {
     //float asd = 1.0;
     vector<pair<int, float>> team_1 = {make_pair(0, 0.2), make_pair(1, 0.7), make_pair(2, 0.8)};
     vector<pair<int, float>> team_2 = {make_pair(3, quite), make_pair(4, quite), make_pair(5, quite)};
-    LogicalBoard tablero(40, 15, team_1, team_2);
+    LogicalBoard tablero(10, 5, team_1, team_2);
 
-    vector<par> posA = {make_pair(7, 18), make_pair(8, 15), make_pair(6, 15)};
-    vector<par> posB = {make_pair(7, 21), make_pair(8, 23), make_pair(6, 23)};
+    vector<par> posA = {make_pair(2, 3), make_pair(1, 2), make_pair(3, 2)};
+    vector<par> posB = {make_pair(2, 6), make_pair(1, 7), make_pair(3, 7)};
 //    tablero.reset(posA, posB);
 //
 //    auto test = tablero.pelota_libre();
@@ -1678,14 +1685,14 @@ int main() {
     weights.push_back(-0.62); // pesos[3] distancia al arco rival
     weights.push_back(0.65); // pesos[4] angulo de tiro.
     weights.push_back(-0.70); // pesos[5] me metieron un gol.
-    weights.push_back(0.72); // pesos[6] hice un gol.
+    weights.push_back(0.90); // pesos[6] hice un gol.
     weights.push_back(-0.57); // pesos[7] distancia al rival con pelota
     weights.push_back(-0.83); // pesos[8] distancia a la pelota libre
     weights.push_back(0.70); // pesos[9] la pelota yendo al arco
     weights.push_back(0.71); // pesos[10] hay un rival en la trayectoria de la pelota.
 
-    Team a(15, 40, 'A', weights, 50);
-    Team b(15, 40, 'B', weights, 50);
+    Team a(5, 10, 'A', weights, 20);
+    Team b(5, 10, 'B', weights, 20);
 
     compLocal(a, tablero, posA, posB);
 
