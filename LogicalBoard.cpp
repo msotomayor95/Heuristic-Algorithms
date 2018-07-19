@@ -504,7 +504,7 @@ public:
         }
     }
 
-    void fairFightBall(Player p1, Player p2) {
+    void fairFightBall(Player &p1, Player &p2) {
 
         float prob_p2 = normalize(p1.quite(), p2.quite()).second; // ambos usan la probabilidad de quite  (_, ***)
         float x = rand() / (float) RAND_MAX;
@@ -649,20 +649,30 @@ public:
                 if (ball_in_board) {
                     // Si hay jugadores en ese casillero, entonces hay que ver si es uno
                     // solo entonces agarra la pelota y si son dos se la disputan
-                    vector<Player> players_to_fight;
+                    vector<par> players_to_fight;
                     for (uint i = 0; i < team_A.size(); i++) {
                         if (team_A[i].pos_i() == free_ball.posPel_i() && team_A[i].pos_j() == free_ball.posPel_j()) {
-                            players_to_fight.push_back(team_A[i]);
+                            players_to_fight.push_back(make_pair(0, i));
                         }
                         if (team_B[i].pos_i() == free_ball.posPel_i() && team_B[i].pos_j() == free_ball.posPel_j()) {
-                            players_to_fight.push_back(team_B[i]);
+                            players_to_fight.push_back(make_pair(1, i));
                         }
                     }
                     if (players_to_fight.size() == 1) {
-                        players_to_fight[0].takeBall(free_ball);
+                        if (players_to_fight[0].first == 0){
+                            team_A[players_to_fight[0].second].takeBall(free_ball);
+                        }
+                        else{
+                            team_B[players_to_fight[0].second].takeBall(free_ball);
+                        }
                         hayPelotaLibre = false;
                     } else if (players_to_fight.size() == 2) {
-                        fairFightBall(players_to_fight[0], players_to_fight[1]);
+                        if(players_to_fight[0].first == 0){
+                            fairFightBall(team_A[players_to_fight[0].second], team_B[players_to_fight[1].second]);
+                        }
+                        else{
+                            fairFightBall(team_A[players_to_fight[1].second], team_B[players_to_fight[0].second]);
+                        }
                     } else if (is_neighbour(posPelota,
                                             arcos)) {  //Si se verifico que era un movimiento valido no deberia pasar (**)
                         // Si la pelota no está en la cancha y es vecina del arco, entonces cruzo el arco
@@ -1477,7 +1487,7 @@ vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector
                                 t.reset(posA, posB);
                                 Team b(original.dameFilas(), original.dameColumnas(), 'B', single, original.dameTurnos());
                                 for (int l1 = 0; l1 < 20; ++l1) {
-                                    par r = jugar(original, b, t);
+                                    jugar(original, b, t);
                                     if (t.winner() == 'B') cantGanadas++;
                                     t.reset(posA, posB);
                                     //cout << "iteracion numero: " << l1 << endl;
@@ -1487,6 +1497,7 @@ vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector
                                 cout << "El equipo B gano: " << cantGanadas << endl;
                                 if(cantGanadas >= 15) return single;
                                 cantGanadas = 0;
+                                single.clear();
                                 contando++;
                             }
                         }
