@@ -311,6 +311,10 @@ public:
         jug_j = p.second;
     }
 
+    void cambia_quite(float q){
+        p_quite = q;
+    }
+
 private:
     int id;
     float p_quite;
@@ -829,6 +833,18 @@ public:
 
     par resultado_ant() {
         return last_score;
+    }
+
+    void cambiarPesos(vector<float> quites, char name){
+        if (name == 'A'){
+            for (int i = 0; i < 3; ++i) {
+                team_A[i].cambia_quite(quites[i]);
+            }
+        } else if(name == 'B'){
+            for (int i = 0; i < 3; ++i) {
+                team_B[i].cambia_quite(quites[i]);
+            }
+        }
     }
 
 private:
@@ -1403,7 +1419,7 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
 
     int match_duration = a.dameTurnos();
 
-    imprimirJugadas(t, 0);
+    //imprimirJugadas(t, 0);
 
     int i = 0;
     for (i; i < match_duration; ++i) {
@@ -1412,31 +1428,31 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
 
         t.makeMove(teamplay_a, teamplay_b);
 
-        imprimirJugadas(t, i+1);
+        //imprimirJugadas(t, i+1);
     }
 
     return t.resultado();
 }
 
-vector<float> campOff(Team &original, LogicalBoard &t) {
+vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector<par> &posB){
     vector<vector<float>> pv(6);
     vector<float> single;
     float k;
+    int contando = 0;
     for (int i = 0; i < 6; ++i) {
         k = original.damePesos()[i];
         pv[i].push_back(k);
-        if (original.damePesos()[i] != 1) {
+        if (original.damePesos()[i] < 0.97) {
             k = k + 0.04;
             pv[i].push_back(k);
         }
-        if (original.damePesos()[i] != (-1)) {
+        if (original.damePesos()[i] > -0.97) {
             k = original.damePesos()[i] - 0.04;
             pv[i].push_back(k);
         }
     }
 
     int cantGanadas = 0;
-    par res;
     bool prim_it;
     for (int j = 0; j < pv[0].size(); ++j) {
         for (int i = 0; i < pv[1].size(); ++i) {
@@ -1455,14 +1471,18 @@ vector<float> campOff(Team &original, LogicalBoard &t) {
                                 for (int k1 = 6; k1 < 11; ++k1) {
                                     single.push_back(original.damePesos()[k1]);
                                 }
-
+                                t.cambiarPesos({single[0], single[1], single[2]}, 'B');
+                                t.reset(posA, posB);
                                 Team b(original.dameFilas(), original.dameColumnas(), 'B', single, original.dameTurnos());
                                 for (int l1 = 0; l1 < 20; ++l1) {
-                                    res = jugar(original, b, t);
-                                    if (res.first < res.second) cantGanadas++;
+                                    jugar(original, b, t);
+                                    if (t.winner() == 'B') cantGanadas++;
+                                    t.reset(posA, posB);
+                                    cout << "iteracion numero : " << l1 << endl;
                                 }
                                 if(cantGanadas >= 15) return single;
                                 cantGanadas = 0;
+
                             }
                         }
                     }
@@ -1473,13 +1493,16 @@ vector<float> campOff(Team &original, LogicalBoard &t) {
     return original.damePesos();
 }
 
-Team compLocal(Team &inicial, LogicalBoard &t) {
+Team compLocal(Team &inicial, LogicalBoard &t, vector<par> &posA, vector<par> &posB) {
     int i = 0;
-    while (i < 200) {
-        inicial.damePesos() = campOff(inicial, t);
-        imprimirPesos(inicial.damePesos());
-        i++;
-    }
+    imprimirPesos(inicial.damePesos());
+    //while (i < 200) {
+    inicial.damePesos() = campOff(inicial, t, posA, posB);
+    vector<float> current = {inicial.damePesos()[0], inicial.damePesos()[1], inicial.damePesos()[2]};
+    t.cambiarPesos(current, 'A');
+    imprimirPesos(inicial.damePesos());
+        //i++;
+    //}
     return inicial;
     ///aca van a jugar
     //aca me gano uno
@@ -1642,10 +1665,10 @@ int main() {
 
     vector<par> posA = {make_pair(7, 18), make_pair(8, 15), make_pair(6, 15)};
     vector<par> posB = {make_pair(7, 21), make_pair(8, 23), make_pair(6, 23)};
-    tablero.reset(posA, posB);
-
-    auto test = tablero.pelota_libre();
-
+//    tablero.reset(posA, posB);
+//
+//    auto test = tablero.pelota_libre();
+//
     vector<float> weights;
 
     weights.push_back(quite); // pesos[0]
@@ -1654,20 +1677,22 @@ int main() {
 
     weights.push_back(-0.62); // pesos[3] distancia al arco rival
     weights.push_back(0.65); // pesos[4] angulo de tiro.
-    weights.push_back(-0.94); // pesos[5] me metieron un gol.
-    weights.push_back(0.92); // pesos[6] hice un gol.
+    weights.push_back(-0.70); // pesos[5] me metieron un gol.
+    weights.push_back(0.72); // pesos[6] hice un gol.
     weights.push_back(-0.57); // pesos[7] distancia al rival con pelota
     weights.push_back(-0.83); // pesos[8] distancia a la pelota libre
-    weights.push_back(0.99); // pesos[9] la pelota yendo al arco
-    weights.push_back(0.94); // pesos[10] hay un rival en la trayectoria de la pelota.
+    weights.push_back(0.70); // pesos[9] la pelota yendo al arco
+    weights.push_back(0.71); // pesos[10] hay un rival en la trayectoria de la pelota.
 
-    Team a(15, 40, 'A', weights, 100);
-    Team b(15, 40, 'B', weights, 100);
+    Team a(15, 40, 'A', weights, 50);
+    Team b(15, 40, 'B', weights, 50);
 
-    par resultado = jugar(a, b, tablero);
+    compLocal(a, tablero, posA, posB);
 
-    cout << "Goles de TEAM A: " << resultado.first << endl;
-    cout << "Goles de TEAM B: " << resultado.second << endl;
+//    par resultado = jugar(a, b, tablero);
+//
+//    cout << "Goles de TEAM A: " << resultado.first << endl;
+//    cout << "Goles de TEAM B: " << resultado.second << endl;
 
 //    par m = make_pair(0, 0);
 //    vector<mov> jugada_B = {make_tuple(3, "MOVIMIENTO", m), make_tuple(4, "MOVIMIENTO", m), make_tuple(5, "MOVIMIENTO", m)};
