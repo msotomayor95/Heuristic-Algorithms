@@ -97,7 +97,6 @@ bool is_neighbour(par &x, vector <par> &v) {
     return esVecino;
 }
 
-
 vector<par> unir_vectores(vector<par> a, vector<par> b) {
     for (uint i = 0; i < b.size(); i++) {
         a.push_back(b[i]);
@@ -308,6 +307,10 @@ public:
     void posicionarJugador(par p) {
         jug_i = p.first;
         jug_j = p.second;
+    }
+
+    void cambia_quite(float q){
+        p_quite = q;
     }
 
 private:
@@ -830,6 +833,18 @@ public:
         return last_score;
     }
 
+    void cambiarPesos(vector<float> quites, char name){
+        if (name == 'A'){
+            for (int i = 0; i < 3; ++i) {
+                team_A[i].cambia_quite(quites[i]);
+            }
+        } else if(name == 'B'){
+            for (int i = 0; i < 3; ++i) {
+                team_B[i].cambia_quite(quites[i]);
+            }
+        }
+    }
+
 private:
     par score;   //puntaje del partido
     vector <Player> team_A;
@@ -983,8 +998,10 @@ public:
         //metodo que llama a la pos del team
         vector<Player> equipoJ;
         equipoJ = t.getitem(nombre);
-        float esquiva = pesos[0] * (1 - equipoJ[0].quite()) + pesos[1] * (1 - equipoJ[1].quite()) +
-                        pesos[2] * (1 - equipoJ[2].quite());
+        float esquiva = 0;
+        for (int i = 0; i < 3; ++i) {
+            if(equipoJ[i].tienePelota()) esquiva = (1-equipoJ[i].quite());
+        }
         puntaje_final += pesos[3] * distAlArco(t) + pesos[4] * anguloDeTiro(t);
         puntaje_final += esquiva + pesos[5] * (int) golContra(t);
         return puntaje_final;
@@ -999,7 +1016,7 @@ public:
         float quites = 0;
         for (int i = 0; i < 3; ++i) {
             quites += pesos[i];
-            if (i == 0 || pesos[ind_min] > pesos[i]) ind_min = pesos[i];
+            if (i == 0 || pesos[ind_min] > pesos[i]) ind_min = i;
         }
         quites -= pesos[ind_min];
         auto p = t.jugador_con_pelota(rival);
@@ -1341,6 +1358,10 @@ public:
         nombre = nom;
     }
 
+    int dameFilas(){return filas;}
+
+    int dameColumnas(){return columnas;}
+
 private:
     //podria cambiar la distancia de cada uno
     int filas;
@@ -1384,95 +1405,118 @@ void imprimirJugadas(LogicalBoard &t, int i){
     }
 }
 
+void imprimirPesos(vector<float> &weights){
+    cout << "[ ";
+    for (auto i = 0; i < weights.size(); i++){
+        i != weights.size()-1? cout << weights[i] << ", ":cout << weights[i] << "]";
+    }
+    cout << endl;
+}
+
 par jugar(Team &a, Team &b, LogicalBoard &t) {
     vector<mov> teamplay_a;
-
-    par m = make_pair(0, 0);
-    vector<mov> teamplay_b = {make_tuple(3, "MOVIMIENTO", m),
-                              make_tuple(4, "MOVIMIENTO", m),
-                              make_tuple(5, "MOVIMIENTO", m)};
+    vector<mov> teamplay_b;
 
     int match_duration = a.dameTurnos();
 
-    imprimirJugadas(t, 0);
+    //imprimirJugadas(t, 0);
 
     int i = 0;
     for (i; i < match_duration; ++i) {
         teamplay_a = a.generarJugada(t);
-        //teamplay_b = b.generarJugada(t);
+        teamplay_b = b.generarJugada(t);
 
         t.makeMove(teamplay_a, teamplay_b);
 
-        imprimirJugadas(t, i+1);
+        //imprimirJugadas(t, i+1);
     }
-
 
     return t.resultado();
 }
 
-vector<float> campOff(Team &original, LogicalBoard &t) {
+vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector<par> &posB){
     vector<vector<float>> pv(6);
     vector<float> single;
     float k;
+    int contando = 1;
     for (int i = 0; i < 6; ++i) {
         k = original.damePesos()[i];
         pv[i].push_back(k);
-        if (original.damePesos()[i] != 1) {
-            k = k + 0.01;
+        if (original.damePesos()[i] < 0.97) {
+            k = k + 0.04;
             pv[i].push_back(k);
         }
-        if (original.damePesos()[i] != (-1)) {
-            k = original.damePesos()[i] - 0.01;
+        if (original.damePesos()[i] > -0.97) {
+            k = original.damePesos()[i] - 0.04;
             pv[i].push_back(k);
         }
     }
-    bool meGanaron = false;
-    for (int j = 0; j < pv[0].size() && !meGanaron; ++j) {
-        for (int i = 0; i < pv[1].size() && !meGanaron; ++i) {
-            for (int l = 0; l < pv[2].size() && !meGanaron; ++l) {
-                for (int m = 0; m < pv[3].size() && !meGanaron; ++m) {
-                    for (int n = 0; n < pv[4].size() && !meGanaron; ++n) {
-                        for (int i1 = 0; i1 < pv[5].size() && !meGanaron; ++i1) {
-                            single.push_back(pv[0][j]);
-                            single.push_back(pv[1][i]);
-                            single.push_back(pv[2][l]);
-                            single.push_back(pv[3][m]);
-                            single.push_back(pv[4][n]);
-                            single.push_back(pv[5][i1]);
-                            for (int k1 = 6; k1 < 11; ++k1) {
-                                single.push_back(original.damePesos()[k1]);
-                            }
 
-                            Team b(5, 10, 'B', single, original.dameTurnos());
-                            int cantGanadas = 0;
-                            par res;
-                            for (int l1 = 0; l1 < 20; ++l1) {
-                                res = jugar(original, b, t);
-                                if (res.first < res.second) cantGanadas++;
+    int cantGanadas = 0;
+    bool prim_it;
+    for (int j = 0; j < pv[0].size(); ++j) {
+        for (int i = 0; i < pv[1].size(); ++i) {
+            for (int l = 0; l < pv[2].size(); ++l) {
+                for (int m = 0; m < pv[3].size() ; ++m) {
+                    for (int n = 0; n < pv[4].size(); ++n) {
+                        for (int i1 = 0; i1 < pv[5].size(); ++i1) {
+                            prim_it = j == 0 && i == 0 && l == 0 && m == 0 && n == 0 && i1 == 0;
+                            if(!prim_it){
+                                single.push_back(pv[0][j]);
+                                single.push_back(pv[1][i]);
+                                single.push_back(pv[2][l]);
+                                single.push_back(pv[3][m]);
+                                single.push_back(pv[4][n]);
+                                single.push_back(pv[5][i1]);
+                                for (int k1 = 6; k1 < 11; ++k1) {
+                                    single.push_back(original.damePesos()[k1]);
+                                }
+                                t.cambiarPesos({single[0], single[1], single[2]}, 'B');
+                                t.reset(posA, posB);
+                                Team b(original.dameFilas(), original.dameColumnas(), 'B', single, original.dameTurnos());
+                                for (int l1 = 0; l1 < 20; ++l1) {
+                                    par r = jugar(original, b, t);
+                                    if (t.winner() == 'B') cantGanadas++;
+                                    t.reset(posA, posB);
+                                    //cout << "iteracion numero: " << l1 << endl;
+                                    //cout << "el res es: " << r.first << ", " << r.second << endl;
+                                }
+                                cout << "termino el partido: " << contando << endl;
+                                cout << "El equipo B gano: " << cantGanadas << endl;
+                                cantGanadas = 0;
+                                if(cantGanadas >= 15) return single;
+
+
+                                contando++;
                             }
-                            meGanaron = cantGanadas >= 15;
                         }
                     }
                 }
             }
         }
     }
-    return single;
+    return original.damePesos();
 }
 
-Team compLocal(Team &inicial, LogicalBoard &t) {
+Team compLocal(Team &inicial, LogicalBoard &t, vector<par> &posA, vector<par> &posB) {
     int i = 0;
-    inicial.damePesos() = campOff(inicial, t);
+    imprimirPesos(inicial.damePesos());
+    //while (i < 200) {
+    inicial.damePesos() = campOff(inicial, t, posA, posB);
+    vector<float> current = {inicial.damePesos()[0], inicial.damePesos()[1], inicial.damePesos()[2]};
+    t.cambiarPesos(current, 'A');
+    imprimirPesos(inicial.damePesos());
+        //i++;
+    //}
+    return inicial;
     ///aca van a jugar
     //aca me gano uno
 }
-
-
 vector<vector<float> > populacion() {
     vector<vector<float>> poblacion(12);
     for (int i = 0; i < 12; ++i) {   //i es la cantidad de poblaciones distintas que se generan que van a ser 12 en total
         for (int j = 0; j < 11; ++j) { //j son los indices de los pesos que van de 0 a 10
-            if (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 9 || j==10) {
+            if (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 9 || j == 10) {
                 poblacion[i].push_back(rand() / (float) RAND_MAX);  //genera numeros random en el intervalo [0..1]
             } else {
                 poblacion[i].push_back(-rand() / (float) RAND_MAX); //genera numeros random en el intervalo [-1..0]
@@ -1481,7 +1525,6 @@ vector<vector<float> > populacion() {
     }
     return poblacion;
 }
-
 
 vector<float> fitnessUno(vector<vector<float> >& poblacion, int& turnos, LogicalBoard& t){
     vector<Team> equipos;
@@ -1616,22 +1659,21 @@ vector<vector<float> > seleccionPonderada(vector<vector<float> > poblacion,int& 
 
 
 
-
 int main() {
     srand(time(NULL));
 
     float quite = 0.5;
     //float asd = 1.0;
-    vector<pair<int, float>> team_1 = {make_pair(0, quite), make_pair(1, quite), make_pair(2, quite)};
+    vector<pair<int, float>> team_1 = {make_pair(0, 0.2), make_pair(1, 0.7), make_pair(2, 0.8)};
     vector<pair<int, float>> team_2 = {make_pair(3, quite), make_pair(4, quite), make_pair(5, quite)};
     LogicalBoard tablero(10, 5, team_1, team_2);
 
-    vector<par> posA = {make_pair(1, 1), make_pair(2, 1), make_pair(3, 1)};
-    vector<par> posB = {make_pair(1, 9), make_pair(1, 8), make_pair(1, 7)};
-    tablero.reset(posA, posB);
-
-    auto test = tablero.pelota_libre();
-
+    vector<par> posA = {make_pair(2, 3), make_pair(1, 2), make_pair(3, 2)};
+    vector<par> posB = {make_pair(2, 6), make_pair(1, 7), make_pair(3, 7)};
+//    tablero.reset(posA, posB);
+//
+//    auto test = tablero.pelota_libre();
+//
     vector<float> weights;
 
     weights.push_back(quite); // pesos[0]
@@ -1640,20 +1682,22 @@ int main() {
 
     weights.push_back(-0.62); // pesos[3] distancia al arco rival
     weights.push_back(0.65); // pesos[4] angulo de tiro.
-    weights.push_back(-0.94); // pesos[5] me metieron un gol.
-    weights.push_back(0.92); // pesos[6] hice un gol.
+    weights.push_back(-0.70); // pesos[5] me metieron un gol.
+    weights.push_back(0.90); // pesos[6] hice un gol.
     weights.push_back(-0.57); // pesos[7] distancia al rival con pelota
     weights.push_back(-0.83); // pesos[8] distancia a la pelota libre
-    weights.push_back(0.99); // pesos[9] la pelota yendo al arco
-    weights.push_back(0.94); // pesos[10] hay un rival en la trayectoria de la pelota.
-    Team a(5, 10, 'A', weights, 100);
-    Team b(5, 10, 'B', weights, 100);
+    weights.push_back(0.70); // pesos[9] la pelota yendo al arco
+    weights.push_back(0.71); // pesos[10] hay un rival en la trayectoria de la pelota.
 
-    par resultado = jugar(a, b, tablero);
+    Team a(5, 10, 'A', weights, 20);
+    Team b(5, 10, 'B', weights, 20);
 
+    compLocal(a, tablero, posA, posB);
 
-    cout << "Goles de TEAM A: " << resultado.first << endl;
-    cout << "Goles de TEAM B: " << resultado.second << endl;
+//    par resultado = jugar(a, b, tablero);
+//
+//    cout << "Goles de TEAM A: " << resultado.first << endl;
+//    cout << "Goles de TEAM B: " << resultado.second << endl;
 
 //    par m = make_pair(0, 0);
 //    vector<mov> jugada_B = {make_tuple(3, "MOVIMIENTO", m), make_tuple(4, "MOVIMIENTO", m), make_tuple(5, "MOVIMIENTO", m)};
@@ -1678,7 +1722,7 @@ int main() {
 
 
 
-
+    populacion();
 
 
 
