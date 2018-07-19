@@ -1421,7 +1421,7 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
 
     int match_duration = a.dameTurnos();
 
-    //imprimirJugadas(t, 0);
+    imprimirJugadas(t, 0);
 
     int i = 0;
     for (i; i < match_duration; ++i) {
@@ -1430,7 +1430,7 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
 
         t.makeMove(teamplay_a, teamplay_b);
 
-        //imprimirJugadas(t, i+1);
+        imprimirJugadas(t, i+1);
     }
 
     return t.resultado();
@@ -1663,42 +1663,50 @@ vector<vector<float> > seleccionPonderada(vector<vector<float> > poblacion,int& 
 int main() {
     srand(time(NULL));
 
+    vector<float> weights;
+
+    for (auto i = 0; i < 11; i++){
+        if (i == 0 || i == 1 || i == 2 || i == 4 || i == 6 || i == 9 || i == 10){
+            weights.push_back(rand()/ (float)RAND_MAX);
+        } else {
+            weights.push_back(-rand()/ (float)RAND_MAX);
+        }
+    }
+
     float quite = 0.5;
-    //float asd = 1.0;
-    vector<pair<int, float>> team_1 = {make_pair(0, 0.2), make_pair(1, 0.7), make_pair(2, 0.8)};
-    vector<pair<int, float>> team_2 = {make_pair(3, quite), make_pair(4, quite), make_pair(5, quite)};
+
+    vector<pair<int, float>> team_1 = {make_pair(0, weights[0]), make_pair(1, weights[1]), make_pair(2, weights[2])};
+    vector<pair<int, float>> team_2 = {make_pair(3, weights[0]), make_pair(4, weights[1]), make_pair(5, weights[1])};
     LogicalBoard tablero(10, 5, team_1, team_2);
 
     vector<par> posA = {make_pair(2, 3), make_pair(1, 2), make_pair(3, 2)};
     vector<par> posB = {make_pair(2, 6), make_pair(1, 7), make_pair(3, 7)};
-//    tablero.reset(posA, posB);
+    tablero.reset(posA, posB);
 //
 //    auto test = tablero.pelota_libre();
 //
-    vector<float> weights;
 
-    weights.push_back(quite); // pesos[0]
-    weights.push_back(quite); // pesos[1]
-    weights.push_back(quite); // pesos[2]
-
-    weights.push_back(-0.62); // pesos[3] distancia al arco rival
-    weights.push_back(0.65); // pesos[4] angulo de tiro.
-    weights.push_back(-0.70); // pesos[5] me metieron un gol.
-    weights.push_back(0.90); // pesos[6] hice un gol.
-    weights.push_back(-0.57); // pesos[7] distancia al rival con pelota
-    weights.push_back(-0.83); // pesos[8] distancia a la pelota libre
-    weights.push_back(0.70); // pesos[9] la pelota yendo al arco
-    weights.push_back(0.71); // pesos[10] hay un rival en la trayectoria de la pelota.
+//    weights.push_back(quite); // pesos[0]
+//    weights.push_back(quite); // pesos[1]
+//    weights.push_back(quite); // pesos[2]
+//
+//    weights.push_back(-0.62); // pesos[3] distancia al arco rival
+//    weights.push_back(0.65); // pesos[4] angulo de tiro.
+//    weights.push_back(-0.70); // pesos[5] me metieron un gol.
+//    weights.push_back(0.90); // pesos[6] hice un gol.
+//    weights.push_back(-0.57); // pesos[7] distancia al rival con pelota
+//    weights.push_back(-0.83); // pesos[8] distancia a la pelota libre
+//    weights.push_back(0.70); // pesos[9] la pelota yendo al arco
+//    weights.push_back(0.71); // pesos[10] hay un rival en la trayectoria de la pelota.
 
     Team a(5, 10, 'A', weights, 20);
     Team b(5, 10, 'B', weights, 20);
+//    compLocal(a, tablero, posA, posB);
 
-    compLocal(a, tablero, posA, posB);
-
-//    par resultado = jugar(a, b, tablero);
+    par resultado = jugar(a, b, tablero);
 //
-//    cout << "Goles de TEAM A: " << resultado.first << endl;
-//    cout << "Goles de TEAM B: " << resultado.second << endl;
+    cout << "Goles de TEAM A: " << resultado.first << endl;
+    cout << "Goles de TEAM B: " << resultado.second << endl;
 
 //    par m = make_pair(0, 0);
 //    vector<mov> jugada_B = {make_tuple(3, "MOVIMIENTO", m), make_tuple(4, "MOVIMIENTO", m), make_tuple(5, "MOVIMIENTO", m)};
