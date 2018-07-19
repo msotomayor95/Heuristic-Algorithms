@@ -1464,7 +1464,7 @@ vector <vector<float>> populacion() {
     for (int i = 0;
          i < 12; ++i) {   //i es la cantidad de poblaciones distintas que se generan que van a ser 12 en total
         for (int j = 0; j < 11; ++j) { //j son los indices de los pesos que van de 0 a 10
-            if (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 9) {
+            if (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 9 || j == 10) {
                 poblacion[i].push_back(rand() / (float) RAND_MAX);  //genera numeros random en el intervalo [0..1]
             } else {
                 poblacion[i].push_back(-rand() / (float) RAND_MAX); //genera numeros random en el intervalo [-1..0]
@@ -1598,7 +1598,7 @@ int main() {
 
 
 
-
+    populacion();
 
 
 
