@@ -1700,7 +1700,20 @@ int main() {
 
     Team a(5, 10, 'A', weights, 20);
     Team b(5, 10, 'B', weights, 20);
+
+    vector<mov> jugada_A = {make_tuple(0, "PASE", make_pair(4, 2)),
+                            make_tuple(1, "MOVIMIENTO", make_pair(0, 0)),
+                            make_tuple(2, "MOVIMIENTO", make_pair(0, 0))};
+
+    vector<mov> jugada_B = {make_tuple(3, "MOVIMIENTO", make_pair(0, 0)),
+                            make_tuple(4, "MOVIMIENTO", make_pair(0, 0)),
+                            make_tuple(5, "MOVIMIENTO", make_pair(0, 0))};
+
+    tablero.makeMove(jugada_A, jugada_B);
+
 //    compLocal(a, tablero, posA, posB);
+
+//    imprimirPesos(a.damePesos());
 
     par resultado = jugar(a, b, tablero);
 //
@@ -1712,8 +1725,6 @@ int main() {
 //    par m1 = make_pair(1, 1);
 //    par m2 = make_pair(3, 0);
 //    par m3 = make_pair(4, 0);
-//    vector<mov> jugada_A = {make_tuple(0, "PASE", m1), make_tuple(1, "MOVIMIENTO", m2), make_tuple(2, "MOVIMIENTO", m2)};
-//    tablero.makeMove(jugada_A, jugada_B);
 //    auto team1 = tablero.getitem('A');
 //    auto team2 = tablero.getitem('B');
 //
