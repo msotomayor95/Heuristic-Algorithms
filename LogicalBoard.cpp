@@ -238,8 +238,7 @@ public:
 
     void undoMove() {
         par p = make_pair(jug_i, jug_j);
-        if (p !=
-            old_position) {            //comparo el valor de la posicion actual con el de la posicion anterior si son iguales no hago nada.
+        if (p != old_position) {            //comparo el valor de la posicion actual con el de la posicion anterior si son iguales no hago nada.
             jug_i = old_position.first;
             jug_j = old_position.second;
             moveBall();
@@ -250,8 +249,7 @@ public:
 
     }
 
-    void
-    moveBall() {   //el jugador se mueve con la pelota y por lo tanto la pelota tiene las mismas coordenadas que el jugador
+    void moveBall() {   //el jugador se mueve con la pelota y por lo tanto la pelota tiene las mismas coordenadas que el jugador
         if (hayPosesion) {                        // if not self.ball is None:   -------ver esto!-----Creo que seria definir que el jugador tiene que tener la pelota
             par p = make_pair(jug_i, jug_j);
             ball.jugadorEnPosesion(p);
