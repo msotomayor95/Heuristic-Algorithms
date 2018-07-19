@@ -132,6 +132,9 @@ public:
                 pel_i += 2 * move.first;        //se mueve de a dos casilleros por paso
                 pel_j += 2 * move.second;
                 movement = make_pair(movement.first, movement.second - 1);  //se reduce en 1 la cantidad de pasos
+                if(movement.second == 0){
+                    tieneMov = false;
+                }
             }
         }
     }
