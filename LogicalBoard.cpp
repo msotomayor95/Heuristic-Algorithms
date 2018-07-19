@@ -105,6 +105,14 @@ vector<par> unir_vectores(vector<par> a, vector<par> b) {
 
 }
 
+float suma(vector<float>& v){
+    float suma;
+    for (int i = 0; i < v.size(); ++i) {
+        suma += v[i];
+    }
+    return suma;
+}
+
 class Ball {
 public:
 
@@ -123,6 +131,9 @@ public:
                 pel_i += 2 * move.first;        //se mueve de a dos casilleros por paso
                 pel_j += 2 * move.second;
                 movement = make_pair(movement.first, movement.second - 1);  //se reduce en 1 la cantidad de pasos
+                if(movement.second == 0){
+                    tieneMov = false;
+                }
             }
         }
     }
@@ -1465,13 +1476,11 @@ Team compLocal(Team &inicial, LogicalBoard &t) {
     ///aca van a jugar
     //aca me gano uno
 }
-
-vector <vector<float>> populacion() {
+vector<vector<float> > populacion() {
     vector<vector<float>> poblacion(12);
-    for (int i = 0;
-         i < 12; ++i) {   //i es la cantidad de poblaciones distintas que se generan que van a ser 12 en total
+    for (int i = 0; i < 12; ++i) {   //i es la cantidad de poblaciones distintas que se generan que van a ser 12 en total
         for (int j = 0; j < 11; ++j) { //j son los indices de los pesos que van de 0 a 10
-            if (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 9) {
+            if (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 9 || j==10) {
                 poblacion[i].push_back(rand() / (float) RAND_MAX);  //genera numeros random en el intervalo [0..1]
             } else {
                 poblacion[i].push_back(-rand() / (float) RAND_MAX); //genera numeros random en el intervalo [-1..0]
@@ -1540,6 +1549,78 @@ vector<float> fitnessDos(vector<vector<float>>& poblacion, int& turnos, LogicalB
     }
     return puntaje;
 }
+//agarro la primer mitad de uno y lo pongo con la segunda mitad del otro
+void crossoverUno(vector<float>& p1, vector<float>& p2){
+    float finDelDos;
+    for (int i = p1.size()/2; i < p1.size(); ++i) {
+        finDelDos = p2[i];
+        p2[i] = p1[i];
+        p1[i] = finDelDos;
+    }
+}
+
+//Mezclo de a cuartos primer cuarto queda igual segundo cuarto se intercambia tercer cuarto queda igual cuarta parte se intercambia
+void crossoverDos(vector<float>& p1, vector<float>& p2) {
+    float segundoCuarto, ultimoCuarto;
+    for (int i = p1.size()/4; i < p1.size()/2; ++i) {
+        segundoCuarto = p2[i];
+        p2[i] = p1[i];
+        p1[i] = segundoCuarto;
+    }
+    for (int i = 3*p1.size()/4; i < p1.size(); ++i) {
+        ultimoCuarto = p2[i];
+        p2[i] = p1[i];
+        p1[i] = ultimoCuarto;
+    }
+}
+
+vector<float> mutacion(vector<float> p){
+    for (int i = 0; i <p.size() ; ++i) {
+        if(rand()/(float) RAND_MAX < 0.05){
+            if((i == 0 || i == 1 || i == 2 || i == 4 || i == 6 || i == 9 || i == 10) && p[i] < 0.96){
+                p[i] += 0.05;
+            }else if((i == 3 || i == 5 || i == 7 || i == 8) && p[i] > -0.96){
+                p[i] -= 0.05;
+            }
+        }
+    }
+    return p;
+}
+//Elijo la mitad de la poblacion de manera random
+vector<vector<float> > seleccionSimple(vector<vector<float> > poblacion){
+    vector<vector<float>> seleccion;
+    int indice;
+    for (int i = 0; i < 5; ++i) {
+        indice = rand() % 6;
+        seleccion.push_back(poblacion[indice]);
+    }
+    return seleccion;
+}
+
+vector<vector<float> > seleccionPonderada(vector<vector<float> > poblacion,int& turnos, LogicalBoard& t) {
+    vector<float> fitness = fitnessUno(poblacion, turnos, t);
+    float sumaFitness = suma(fitness);
+    vector<vector<float> > seleccionados;
+    vector<float> probabilidades;
+    int j = 0;
+    for (int i = 0; i < poblacion.size(); ++i) {
+        probabilidades.push_back(0.5 * fitness[i] / sumaFitness);  //normalizo los valores de fitness
+    }
+    while (seleccionados.size() < 6){
+        while (j < probabilidades.size()) {
+            if (rand() / (float) RAND_MAX <= probabilidades[j]) {
+                seleccionados.push_back(poblacion[j]);
+                probabilidades[j] = 0;   //si ya salio elegido me aseguro que no vuelva a salir elegido.
+            }
+            ++j;
+        }
+        j = 0;
+    }
+    return seleccionados;
+}
+
+
+
 
 
 int main() {
