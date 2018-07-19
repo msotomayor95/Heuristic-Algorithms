@@ -1477,7 +1477,7 @@ vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector
                                 t.reset(posA, posB);
                                 Team b(original.dameFilas(), original.dameColumnas(), 'B', single, original.dameTurnos());
                                 for (int l1 = 0; l1 < 20; ++l1) {
-                                    par r = jugar(original, b, t);
+                                    jugar(original, b, t);
                                     if (t.winner() == 'B') cantGanadas++;
                                     t.reset(posA, posB);
                                     //cout << "iteracion numero: " << l1 << endl;
@@ -1485,10 +1485,9 @@ vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector
                                 }
                                 cout << "termino el partido: " << contando << endl;
                                 cout << "El equipo B gano: " << cantGanadas << endl;
-                                cantGanadas = 0;
                                 if(cantGanadas >= 15) return single;
-
-
+                                cantGanadas = 0;
+                                single.clear();
                                 contando++;
                             }
                         }
