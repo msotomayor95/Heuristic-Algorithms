@@ -1342,6 +1342,10 @@ public:
         nombre = nom;
     }
 
+    int dameFilas(){return filas;}
+
+    int dameColumnas(){return columnas;}
+
 private:
     //podria cambiar la distancia de cada uno
     int filas;
@@ -1386,9 +1390,9 @@ void imprimirJugadas(LogicalBoard &t, int i){
 }
 
 void imprimirPesos(vector<float> &weights){
-    cout << '[ ';
+    cout << "[ ";
     for (auto i = 0; i < weights.size(); i++){
-        i != weights.size()-1? cout << weights[i] << ', ':cout << weights[i] << "]";
+        i != weights.size()-1? cout << weights[i] << ", ":cout << weights[i] << "]";
     }
     cout << endl;
 }
@@ -1430,32 +1434,36 @@ vector<float> campOff(Team &original, LogicalBoard &t) {
             pv[i].push_back(k);
         }
     }
-    bool meGanaron = false;
-    for (int j = 0; j < pv[0].size() && !meGanaron; ++j) {
-        for (int i = 0; i < pv[1].size() && !meGanaron; ++i) {
-            for (int l = 0; l < pv[2].size() && !meGanaron; ++l) {
-                for (int m = 0; m < pv[3].size() && !meGanaron; ++m) {
-                    for (int n = 0; n < pv[4].size() && !meGanaron; ++n) {
-                        for (int i1 = 0; i1 < pv[5].size() && !meGanaron; ++i1) {
-                            single.push_back(pv[0][j]);
-                            single.push_back(pv[1][i]);
-                            single.push_back(pv[2][l]);
-                            single.push_back(pv[3][m]);
-                            single.push_back(pv[4][n]);
-                            single.push_back(pv[5][i1]);
-                            for (int k1 = 6; k1 < 11; ++k1) {
-                                single.push_back(original.damePesos()[k1]);
-                            }
 
-                            Team b(15, 40, 'B', single, original.dameTurnos());
-                            int cantGanadas = 0;
-                            par res;
-                            for (int l1 = 0; l1 < 20; ++l1) {
-                                res = jugar(original, b, t);
-                                if (res.first < res.second) cantGanadas++;
+    int cantGanadas = 0;
+    par res;
+    bool prim_it;
+    for (int j = 0; j < pv[0].size(); ++j) {
+        for (int i = 0; i < pv[1].size(); ++i) {
+            for (int l = 0; l < pv[2].size(); ++l) {
+                for (int m = 0; m < pv[3].size() ; ++m) {
+                    for (int n = 0; n < pv[4].size(); ++n) {
+                        for (int i1 = 0; i1 < pv[5].size(); ++i1) {
+                            prim_it = j == 0 && i == 0 && l == 0 && m == 0 && n == 0 && i1 == 0;
+                            if(!prim_it){
+                                single.push_back(pv[0][j]);
+                                single.push_back(pv[1][i]);
+                                single.push_back(pv[2][l]);
+                                single.push_back(pv[3][m]);
+                                single.push_back(pv[4][n]);
+                                single.push_back(pv[5][i1]);
+                                for (int k1 = 6; k1 < 11; ++k1) {
+                                    single.push_back(original.damePesos()[k1]);
+                                }
+
+                                Team b(original.dameFilas(), original.dameColumnas(), 'B', single, original.dameTurnos());
+                                for (int l1 = 0; l1 < 20; ++l1) {
+                                    res = jugar(original, b, t);
+                                    if (res.first < res.second) cantGanadas++;
+                                }
+                                if(cantGanadas >= 15) return single;
+                                cantGanadas = 0;
                             }
-                            meGanaron = cantGanadas >= 15;
-                            if (meGanaron) return single;
                         }
                     }
                 }
@@ -1632,8 +1640,8 @@ int main() {
     vector<pair<int, float>> team_2 = {make_pair(3, quite), make_pair(4, quite), make_pair(5, quite)};
     LogicalBoard tablero(40, 15, team_1, team_2);
 
-    vector<par> posA = {make_pair(7, 11), make_pair(6, 11), make_pair(8, 11)};
-    vector<par> posB = {make_pair(1, 9), make_pair(1, 8), make_pair(1, 7)};
+    vector<par> posA = {make_pair(7, 18), make_pair(8, 15), make_pair(6, 15)};
+    vector<par> posB = {make_pair(7, 21), make_pair(8, 23), make_pair(6, 23)};
     tablero.reset(posA, posB);
 
     auto test = tablero.pelota_libre();
