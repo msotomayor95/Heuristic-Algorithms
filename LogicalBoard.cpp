@@ -167,11 +167,15 @@ public:
     }
 
     void step_back_one() {   //solo retrocede un casillero en lugar de dos
-        if (tieneMov) {
-            par move = moves[movement.first];
-            pel_i -= move.first;
-            pel_j -= move.second;
+        int indice = movement.first;
+        for (int i = 0; i < 4; ++i) {
+            if(indice == 8) indice = 0;
+            indice++;
         }
+        par move = moves[indice];
+        pel_i += move.first;
+        pel_j += move.second;
+
     }
 
     void imprimirPelota() {
@@ -627,21 +631,37 @@ public:
         if (hayPelotaLibre) {
             par posPelota = make_pair(free_ball.posPel_i(), free_ball.posPel_j());
             // Mira si alguien interceptó la pelota
-            vector<Player> intercepters;
-            for (uint i = 0; i < team_A.size(); i++) {
+            vector<int> intercepters;
+            vector<char> eqnom;
+
+            for (int i = 0; i < team_A.size(); i++) {
                 if (intercepted(team_A[i], 'A')) {
-                    intercepters.push_back(team_A[i]);
+                    intercepters.push_back(i);
+                    eqnom.push_back('A');
                 }
                 if (intercepted(team_B[i], 'B')) {
-                    intercepters.push_back(team_B[i]);
+                    intercepters.push_back(i);
+                    eqnom.push_back('B');
                 }
             }
             assert(intercepters.size() < 3);  //No puede haber mas de un jugador por equipo interceptando la pelota
             if (intercepters.size() == 1) {
-                intercepters[0].takeBall(free_ball);
+                //DEBUGUEAAARRRRR
+                if(eqnom[0] == 'A'){
+                    team_A[intercepters[0]].takeBall(free_ball);
+                }
+                else{
+                    team_B[intercepters[0]].takeBall(free_ball);
+                }
                 hayPelotaLibre = false;
             } else if (intercepters.size() == 2) {
-                fairFightBall(intercepters[0], intercepters[1]);
+                if(eqnom[0] == 'A'){
+                    fairFightBall(team_A[intercepters[0]], team_B[intercepters[1]]);
+                }
+                else{
+                    fairFightBall(team_A[intercepters[1]], team_B[intercepters[0]]);
+                }
+
             } else {
                 free_ball.move();  //No hubo ningun jugado interceptando la pelota, por lo tanto sigue su curso
                 bool ball_in_board = positionInBoard(free_ball.posPel_i(),
@@ -666,19 +686,21 @@ public:
                             team_B[players_to_fight[0].second].takeBall(free_ball);
                         }
                         hayPelotaLibre = false;
-                    } else if (players_to_fight.size() == 2) {
+                    } else if (players_to_fight.size() == 2){
                         if(players_to_fight[0].first == 0){
                             fairFightBall(team_A[players_to_fight[0].second], team_B[players_to_fight[1].second]);
                         }
                         else{
                             fairFightBall(team_A[players_to_fight[1].second], team_B[players_to_fight[0].second]);
                         }
-                    } else if (is_neighbour(posPelota,
-                                            arcos)) {  //Si se verifico que era un movimiento valido no deberia pasar (**)
-                        // Si la pelota no está en la cancha y es vecina del arco, entonces cruzo el arco
-                        // y quedó atrapada en las redes, por lo que hay que volver un paso atrás.
-                        free_ball.step_back_one();
                     }
+
+                }
+                else if (is_neighbour(posPelota,
+                                      arcos)) {  //Si se verifico que era un movimiento valido no deberia pasar (**)
+                    // Si la pelota no está en la cancha y es vecina del arco, entonces cruzo el arco
+                    // y quedó atrapada en las redes, por lo que hay que volver un paso atrás.
+                    free_ball.step_back_one();
                 }
 
             }
@@ -895,10 +917,12 @@ public:
         int arco_j;
         vector<Player> ju = t.getitem(nombre);
 
-        if (izq) {
-            arco_j = columnas - 1;
+        if (nombre == 'A') {
+            //arco_j = columnas - 1;
+            arco_j = columnas;
         } else {
-            arco_j = 0;
+            //arco_j = 0;
+            arco_j = -1;
         }
         for (int i = 0; i < 3; ++i) {
             dif_i = pow((ju[i].pos_i() - arco_i), 2);
@@ -1421,16 +1445,61 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
 
     int match_duration = a.dameTurnos();
 
-//    imprimirJugadas(t, 0);
+    //imprimirJugadas(t, 0);
 
     int i = 0;
     for (i; i < match_duration; ++i) {
         teamplay_a = a.generarJugada(t);
         teamplay_b = b.generarJugada(t);
+//        if (i == 0){
+//            teamplay_a = {make_tuple(0, "PASE", make_pair(4, 1)),
+//                          make_tuple(1, "MOVIMIENTO", make_pair(0, 0)),
+//                          make_tuple(2, "MOVIMIENTO", make_pair(0, 0))};
+//            teamplay_b = {make_tuple(3, "MOVIMIENTO", make_pair(0, 0)),
+//                          make_tuple(4, "MOVIMIENTO", make_pair(0, 0)),
+//                          make_tuple(5, "MOVIMIENTO", make_pair(0, 0))};
+//        }
+//        else if(i == 1){
+//            teamplay_a = {make_tuple(0, "MOVIMIENTO", make_pair(2, 0)),
+//                          make_tuple(1, "MOVIMIENTO", make_pair(0, 0)),
+//                          make_tuple(2, "MOVIMIENTO", make_pair(0, 0))};
+//
+//            teamplay_b = {make_tuple(3, "MOVIMIENTO", make_pair(8, 0)),
+//                          make_tuple(4, "MOVIMIENTO", make_pair(0, 0)),
+//                          make_tuple(5, "MOVIMIENTO", make_pair(0, 0))};
+//        }
+//        else if(i < 5){
+//            teamplay_a = {make_tuple(0, "MOVIMIENTO", make_pair(0, 0)),
+//                          make_tuple(1, "MOVIMIENTO", make_pair(0, 0)),
+//                          make_tuple(2, "MOVIMIENTO", make_pair(0, 0))};
+//
+//            teamplay_b = {make_tuple(3, "MOVIMIENTO", make_pair(8, 0)),
+//                          make_tuple(4, "MOVIMIENTO", make_pair(0, 0)),
+//                          make_tuple(5, "MOVIMIENTO", make_pair(0, 0))};
+//        }
+//        else if (i == 5){
+//            teamplay_a = {make_tuple(0, "MOVIMIENTO", make_pair(0, 0)),
+//                          make_tuple(1, "MOVIMIENTO", make_pair(0, 0)),
+//                          make_tuple(2, "MOVIMIENTO", make_pair(0, 0))};
+//
+//            teamplay_b = {make_tuple(3, "PASE", make_pair(8, 2)),
+//                          make_tuple(4, "MOVIMIENTO", make_pair(0, 0)),
+//                          make_tuple(5, "MOVIMIENTO", make_pair(0, 0))};
+//        }
+//        else{
+//            teamplay_a = {make_tuple(0, "MOVIMIENTO", make_pair(0, 0)),
+//                          make_tuple(1, "MOVIMIENTO", make_pair(0, 0)),
+//                          make_tuple(2, "MOVIMIENTO", make_pair(0, 0))};
+//
+//            teamplay_b = {make_tuple(3, "MOVIMIENTO", make_pair(0, 0)),
+//                          make_tuple(4, "MOVIMIENTO", make_pair(0, 0)),
+//                          make_tuple(5, "MOVIMIENTO", make_pair(0, 0))};
+//        }
+
 
         t.makeMove(teamplay_a, teamplay_b);
 
-//        imprimirJugadas(t, i+1);
+        //imprimirJugadas(t, i+1);
     }
 
     return t.resultado();
@@ -1457,7 +1526,7 @@ vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector
         indice++;
     }
 
-    int cantGanadas = 1;
+    int cantGanadas = 0;
     bool prim_it;
     for (int j = 0; j < pv[0].size(); ++j) {
         for (int m = 0; m < pv[1].size() ; ++m) {
@@ -1560,17 +1629,17 @@ vector<float> campDeff(Team &original, LogicalBoard &t, vector<par> &posA, vecto
 }
 
 Team compLocal(Team &inicial, LogicalBoard &t, vector<par> &posA, vector<par> &posB) {
-    int i = 0;
     imprimirPesos(inicial.damePesos());
-    //while (i < 200) {
-    inicial.damePesos() = campOff(inicial, t, posA, posB);
-    vector<float> current = {inicial.damePesos()[0], inicial.damePesos()[1], inicial.damePesos()[2]};
-    t.cambiarPesos(current, 'A');
-    imprimirPesos(inicial.damePesos());
-    inicial.damePesos() = campDeff(inicial, t, posA, posB);
-    imprimirPesos(inicial.damePesos());
-        //i++;
-    //}
+    for (int i = 0; i < 200; ++i) {
+        inicial.damePesos() = campOff(inicial, t, posA, posB);
+        vector<float> current = {inicial.damePesos()[0], inicial.damePesos()[1], inicial.damePesos()[2]};
+        t.cambiarPesos(current, 'B');
+        imprimirPesos(inicial.damePesos());
+        inicial.damePesos() = campDeff(inicial, t, posA, posB);
+        current = {inicial.damePesos()[0], inicial.damePesos()[1], inicial.damePesos()[2]};
+        t.cambiarPesos(current, 'B');
+        imprimirPesos(inicial.damePesos());
+    }
     return inicial;
     ///aca van a jugar
     //aca me gano uno
@@ -1733,14 +1802,15 @@ int main() {
     }
 
     float quite = 0.5;
+    //weights = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     vector<pair<int, float>> team_1 = {make_pair(0, weights[0]), make_pair(1, weights[1]), make_pair(2, weights[2])};
-    vector<pair<int, float>> team_2 = {make_pair(3, weights[0]), make_pair(4, weights[1]), make_pair(5, weights[1])};
+    vector<pair<int, float>> team_2 = {make_pair(3, quite), make_pair(4, quite), make_pair(5, quite)};
     LogicalBoard tablero(10, 5, team_1, team_2);
 
     vector<par> posA = {make_pair(2, 3), make_pair(1, 2), make_pair(3, 2)};
     vector<par> posB = {make_pair(2, 6), make_pair(1, 7), make_pair(3, 7)};
-    tablero.reset(posA, posB);
+//    tablero.reset(posA, posB);
 //
 //    auto test = tablero.pelota_libre();
 //
@@ -1776,7 +1846,7 @@ int main() {
 //    imprimirPesos(a.damePesos());
 
 //    par resultado = jugar(a, b, tablero);
-//
+
 //    cout << "Goles de TEAM A: " << resultado.first << endl;
 //    cout << "Goles de TEAM B: " << resultado.second << endl;
 
@@ -1801,7 +1871,7 @@ int main() {
 
 
 
-    populacion();
+//    populacion();
 
 
 
