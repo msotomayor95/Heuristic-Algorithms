@@ -1467,40 +1467,34 @@ vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector
     int cantGanadas = 0;
     bool prim_it;
     for (int j = 0; j < pv[0].size(); ++j) {
-        for (int i = 0; i < pv[1].size(); ++i) {
-            for (int l = 0; l < pv[2].size(); ++l) {
-                for (int m = 0; m < pv[3].size() ; ++m) {
-                    for (int n = 0; n < pv[4].size(); ++n) {
-                        for (int i1 = 0; i1 < pv[5].size(); ++i1) {
-                            prim_it = j == 0 && i == 0 && l == 0 && m == 0 && n == 0 && i1 == 0;
-                            if(!prim_it){
-                                single.push_back(pv[0][j]);
-                                single.push_back(pv[1][i]);
-                                single.push_back(pv[2][l]);
-                                single.push_back(pv[3][m]);
-                                single.push_back(pv[4][n]);
-                                single.push_back(pv[5][i1]);
-                                for (int k1 = 6; k1 < 11; ++k1) {
-                                    single.push_back(original.damePesos()[k1]);
-                                }
-                                t.cambiarPesos({single[0], single[1], single[2]}, 'B');
-                                t.reset(posA, posB);
-                                Team b(original.dameFilas(), original.dameColumnas(), 'B', single, original.dameTurnos());
-                                for (int l1 = 0; l1 < 20; ++l1) {
-                                    jugar(original, b, t);
-                                    if (t.winner() == 'B') cantGanadas++;
-                                    t.reset(posA, posB);
-                                    //cout << "iteracion numero: " << l1 << endl;
-                                    //cout << "el res es: " << r.first << ", " << r.second << endl;
-                                }
-                                cout << "termino el partido: " << contando << endl;
-                                cout << "El equipo B gano: " << cantGanadas << endl;
-                                if(cantGanadas >= 15) return single;
-                                cantGanadas = 0;
-                                single.clear();
-                                contando++;
-                            }
+        for (int m = 0; m < pv[3].size() ; ++m) {
+            for (int n = 0; n < pv[4].size(); ++n) {
+                for (int i1 = 0; i1 < pv[5].size(); ++i1) {
+                    prim_it = j == 0 && m == 0 && n == 0 && i1 == 0;
+                    if(!prim_it){
+                        single.push_back(pv[0][j]);
+                        single.push_back(pv[3][m]);
+                        single.push_back(pv[4][n]);
+                        single.push_back(pv[5][i1]);
+                        for (int k1 = 6; k1 < 11; ++k1) {
+                            single.push_back(original.damePesos()[k1]);
                         }
+                        t.cambiarPesos({single[0], single[1], single[2]}, 'B');
+                        t.reset(posA, posB);
+                        Team b(original.dameFilas(), original.dameColumnas(), 'B', single, original.dameTurnos());
+                        for (int l1 = 0; l1 < 20; ++l1) {
+                            jugar(original, b, t);
+                            if (t.winner() == 'B') cantGanadas++;
+                            t.reset(posA, posB);
+                            //cout << "iteracion numero: " << l1 << endl;
+                            //cout << "el res es: " << r.first << ", " << r.second << endl;
+                        }
+                        cout << "termino el partido: " << contando << endl;
+                        cout << "El equipo B gano: " << cantGanadas << endl;
+                        if(cantGanadas >= 15) return single;
+                        cantGanadas = 0;
+                        single.clear();
+                        contando++;
                     }
                 }
             }
