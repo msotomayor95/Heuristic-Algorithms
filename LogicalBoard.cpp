@@ -1009,7 +1009,7 @@ public:
         float puntaje_final = 0;
         vector<Player> equipoJ;
         equipoJ = t.getitem(nombre);
-        puntaje_final += (1 -equipoJ[0].quite()) * equipoJ[0].tienePelota();
+        puntaje_final += (1 -equipoJ[0].quite()) * (int)equipoJ[0].tienePelota();
         puntaje_final += pesos[3] * distAlArco(t) + pesos[4] * anguloDeTiro(t);
         puntaje_final += pesos[5] * (int) golContra(t);
         return puntaje_final;
@@ -1020,16 +1020,10 @@ public:
         vector<Player> equipoJ;
         equipoJ = t.getitem(nombre);
         char rival = nombre == 'B' ? 'A' : 'B';
-        int ind_min = 0;
-        float quites = 0;
-        for (int i = 0; i < 3; ++i) {
-            quites += pesos[i];
-            if (i == 0 || pesos[ind_min] > pesos[i]) ind_min = i;
-        }
-        quites -= pesos[ind_min];
+        puntaje_final += equipoJ[1].quite() + equipoJ[2].quite();
         auto p = t.jugador_con_pelota(rival);
-        puntaje_final += pesos[7] * distARival(t, p, ind_min);
-        puntaje_final += quites + pesos[6] * (int) golAFavor(t);
+        puntaje_final += pesos[7] * distARival(t, p, 0);
+        puntaje_final += + pesos[6] * (int) golAFavor(t);
         return puntaje_final;
     };
 
@@ -1581,6 +1575,7 @@ Team compLocal(Team &inicial, LogicalBoard &t, vector<par> &posA, vector<par> &p
     ///aca van a jugar
     //aca me gano uno
 }
+
 vector<vector<float> > populacion() {
     vector<vector<float>> poblacion(12);
     for (int i = 0; i < 12; ++i) {   //i es la cantidad de poblaciones distintas que se generan que van a ser 12 en total
@@ -1723,10 +1718,6 @@ vector<vector<float> > seleccionPonderada(vector<vector<float> > poblacion,int& 
     }
     return seleccionados;
 }
-
-
-
-
 
 int main() {
     srand(time(NULL));
