@@ -1443,37 +1443,40 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
 }
 
 vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector<par> &posB){
-    vector<vector<float>> pv(6);
+    vector<vector<float>> pv(4);
     vector<float> single;
     float k;
     int contando = 1;
+    int indice = 0;
     for (int i = 0; i < 6; ++i) {
         k = original.damePesos()[i];
-        pv[i].push_back(k);
+        pv[indice].push_back(k);
         if (original.damePesos()[i] < 0.97) {
             k = k + 0.04;
-            pv[i].push_back(k);
+            pv[indice].push_back(k);
         }
         if (original.damePesos()[i] > -0.97) {
             k = original.damePesos()[i] - 0.04;
-            pv[i].push_back(k);
+            pv[indice].push_back(k);
         }
+        if(i == 0) i = 2;
+        indice++;
     }
 
-    int cantGanadas = 0;
+    int cantGanadas = 1;
     bool prim_it;
     for (int j = 0; j < pv[0].size(); ++j) {
-        for (int m = 0; m < pv[3].size() ; ++m) {
-            for (int n = 0; n < pv[4].size(); ++n) {
-                for (int i1 = 0; i1 < pv[5].size(); ++i1) {
+        for (int m = 0; m < pv[1].size() ; ++m) {
+            for (int n = 0; n < pv[2].size(); ++n) {
+                for (int i1 = 0; i1 < pv[3].size(); ++i1) {
                     prim_it = j == 0 && m == 0 && n == 0 && i1 == 0;
                     if(!prim_it){
                         single.push_back(pv[0][j]);
                         single.push_back(original.damePesos()[1]);
                         single.push_back(original.damePesos()[2]);
-                        single.push_back(pv[3][m]);
-                        single.push_back(pv[4][n]);
-                        single.push_back(pv[5][i1]);
+                        single.push_back(pv[1][m]);
+                        single.push_back(pv[2][n]);
+                        single.push_back(pv[3][i1]);
                         for (int k1 = 6; k1 < 11; ++k1) {
                             single.push_back(original.damePesos()[k1]);
                         }
@@ -1503,7 +1506,63 @@ vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector
 
 vector<float> campDeff(Team &original, LogicalBoard &t, vector<par> &posA, vector<par> &posB){
     //6, 7, 1, 2
+    vector<vector<float>> pv(4);
+    vector<float> single;
+    float k;
+    int contando = 1;
+    int indice = 0;
+    for (int i = 1; i < 8; ++i) {
+        k = original.damePesos()[i];
+        pv[indice].push_back(k);
+        if (original.damePesos()[i] < 0.97) {
+            k = k + 0.04;
+            pv[indice].push_back(k);
+        }
+        if (original.damePesos()[i] > -0.97) {
+            k = original.damePesos()[i] - 0.04;
+            pv[indice].push_back(k);
+        }
+        if (i == 2) i = 5;
+        indice++;
+    }
 
+    int cantGanadas = 0;
+    bool prim_it;
+    for (int j = 0; j < pv[0].size(); ++j) {
+        for (int m = 0; m < pv[1].size() ; ++m) {
+            for (int n = 0; n < pv[2].size(); ++n) {
+                for (int i1 = 0; i1 < pv[3].size(); ++i1) {
+                    prim_it = j == 0 && m == 0 && n == 0 && i1 == 0;
+                    if(!prim_it){
+                        single.push_back(original.damePesos()[0]);
+                        single.push_back(pv[0][j]);
+                        single.push_back(pv[1][m]);
+                        for (int k1 = 3; k1 < 6; ++k1) single.push_back(original.damePesos()[k1]);
+                        single.push_back(pv[2][n]);
+                        single.push_back(pv[3][i1]);
+                        for (int k1 = 8; k1 < 11; ++k1) single.push_back(original.damePesos()[k1]);
+                        t.cambiarPesos({single[0], single[1], single[2]}, 'B');
+                        t.reset(posA, posB);
+                        Team b(original.dameFilas(), original.dameColumnas(), 'B', single, original.dameTurnos());
+                        for (int l1 = 0; l1 < 20; ++l1) {
+                            jugar(original, b, t);
+                            if (t.winner() == 'B') cantGanadas++;
+                            t.reset(posA, posB);
+                            //cout << "iteracion numero: " << l1 << endl;
+                            //cout << "el res es: " << r.first << ", " << r.second << endl;
+                        }
+                        cout << "termino el partido: " << contando << endl;
+                        cout << "El equipo B gano: " << cantGanadas << endl;
+                        if(cantGanadas >= 15) return single;
+                        cantGanadas = 0;
+                        single.clear();
+                        contando++;
+                    }
+                }
+            }
+        }
+    }
+    return original.damePesos();
 }
 
 Team compLocal(Team &inicial, LogicalBoard &t, vector<par> &posA, vector<par> &posB) {
@@ -1515,6 +1574,7 @@ Team compLocal(Team &inicial, LogicalBoard &t, vector<par> &posA, vector<par> &p
     t.cambiarPesos(current, 'A');
     imprimirPesos(inicial.damePesos());
     inicial.damePesos() = campDeff(inicial, t, posA, posB);
+    imprimirPesos(inicial.damePesos());
         //i++;
     //}
     return inicial;
