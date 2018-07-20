@@ -1431,7 +1431,7 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
 
     int match_duration = a.dameTurnos();
 
-    imprimirJugadas(t, 0);
+//    imprimirJugadas(t, 0);
 
     int i = 0;
     for (i; i < match_duration; ++i) {
@@ -1440,7 +1440,7 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
 
         t.makeMove(teamplay_a, teamplay_b);
 
-        imprimirJugadas(t, i+1);
+//        imprimirJugadas(t, i+1);
     }
 
     return t.resultado();
@@ -1473,6 +1473,8 @@ vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector
                     prim_it = j == 0 && m == 0 && n == 0 && i1 == 0;
                     if(!prim_it){
                         single.push_back(pv[0][j]);
+                        single.push_back(original.damePesos()[1]);
+                        single.push_back(original.damePesos()[2]);
                         single.push_back(pv[3][m]);
                         single.push_back(pv[4][n]);
                         single.push_back(pv[5][i1]);
@@ -1503,6 +1505,11 @@ vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector
     return original.damePesos();
 }
 
+vector<float> campDeff(Team &original, LogicalBoard &t, vector<par> &posA, vector<par> &posB){
+    //6, 7, 1, 2
+
+}
+
 Team compLocal(Team &inicial, LogicalBoard &t, vector<par> &posA, vector<par> &posB) {
     int i = 0;
     imprimirPesos(inicial.damePesos());
@@ -1511,6 +1518,7 @@ Team compLocal(Team &inicial, LogicalBoard &t, vector<par> &posA, vector<par> &p
     vector<float> current = {inicial.damePesos()[0], inicial.damePesos()[1], inicial.damePesos()[2]};
     t.cambiarPesos(current, 'A');
     imprimirPesos(inicial.damePesos());
+    inicial.damePesos() = campDeff(inicial, t, posA, posB);
         //i++;
     //}
     return inicial;
@@ -1704,21 +1712,32 @@ int main() {
 //    weights.push_back(0.71); // pesos[10] hay un rival en la trayectoria de la pelota.
 
     Team a(5, 10, 'A', weights, 20);
-    Team b(5, 10, 'B', weights, 20);
-//    compLocal(a, tablero, posA, posB);
+//    Team b(5, 10, 'B', weights, 20);
 
-    par resultado = jugar(a, b, tablero);
+//    vector<mov> jugada_A = {make_tuple(0, "PASE", make_pair(4, 2)),
+//                            make_tuple(1, "MOVIMIENTO", make_pair(0, 0)),
+//                            make_tuple(2, "MOVIMIENTO", make_pair(0, 0))};
 //
-    cout << "Goles de TEAM A: " << resultado.first << endl;
-    cout << "Goles de TEAM B: " << resultado.second << endl;
+//    vector<mov> jugada_B = {make_tuple(3, "MOVIMIENTO", make_pair(0, 0)),
+//                            make_tuple(4, "MOVIMIENTO", make_pair(0, 0)),
+//                            make_tuple(5, "MOVIMIENTO", make_pair(0, 0))};
+
+//    tablero.makeMove(jugada_A, jugada_B);
+
+    compLocal(a, tablero, posA, posB);
+
+//    imprimirPesos(a.damePesos());
+
+//    par resultado = jugar(a, b, tablero);
+//
+//    cout << "Goles de TEAM A: " << resultado.first << endl;
+//    cout << "Goles de TEAM B: " << resultado.second << endl;
 
 //    par m = make_pair(0, 0);
 //    vector<mov> jugada_B = {make_tuple(3, "MOVIMIENTO", m), make_tuple(4, "MOVIMIENTO", m), make_tuple(5, "MOVIMIENTO", m)};
 //    par m1 = make_pair(1, 1);
 //    par m2 = make_pair(3, 0);
 //    par m3 = make_pair(4, 0);
-//    vector<mov> jugada_A = {make_tuple(0, "PASE", m1), make_tuple(1, "MOVIMIENTO", m2), make_tuple(2, "MOVIMIENTO", m2)};
-//    tablero.makeMove(jugada_A, jugada_B);
 //    auto team1 = tablero.getitem('A');
 //    auto team2 = tablero.getitem('B');
 //
