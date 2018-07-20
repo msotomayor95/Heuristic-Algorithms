@@ -1007,15 +1007,11 @@ public:
 
     float puntuar_ofensiva(LogicalBoard &t) {
         float puntaje_final = 0;
-        //metodo que llama a la pos del team
         vector<Player> equipoJ;
         equipoJ = t.getitem(nombre);
-        float esquiva = 0;
-        for (int i = 0; i < 3; ++i) {
-            if(equipoJ[i].tienePelota()) esquiva = (1-equipoJ[i].quite());
-        }
+        puntaje_final += (1 -equipoJ[0].quite()) * equipoJ[0].tienePelota();
         puntaje_final += pesos[3] * distAlArco(t) + pesos[4] * anguloDeTiro(t);
-        puntaje_final += esquiva + pesos[5] * (int) golContra(t);
+        puntaje_final += pesos[5] * (int) golContra(t);
         return puntaje_final;
     };
 
