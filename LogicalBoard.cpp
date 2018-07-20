@@ -1431,7 +1431,7 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
 
     int match_duration = a.dameTurnos();
 
-    imprimirJugadas(t, 0);
+//    imprimirJugadas(t, 0);
 
     int i = 0;
     for (i; i < match_duration; ++i) {
@@ -1440,7 +1440,7 @@ par jugar(Team &a, Team &b, LogicalBoard &t) {
 
         t.makeMove(teamplay_a, teamplay_b);
 
-        imprimirJugadas(t, i+1);
+//        imprimirJugadas(t, i+1);
     }
 
     return t.resultado();
@@ -1454,17 +1454,18 @@ vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector
     for (int i = 0; i < 6; ++i) {
         k = original.damePesos()[i];
         pv[i].push_back(k);
-        if (original.damePesos()[i] < 0.97) {
-            k = k + 0.04;
+        if (original.damePesos()[i] < 0.84) {
+            k = k + 0.17;
             pv[i].push_back(k);
         }
-        if (original.damePesos()[i] > -0.97) {
-            k = original.damePesos()[i] - 0.04;
+        if (original.damePesos()[i] > -0.84) {
+            k = original.damePesos()[i] - 0.17;
             pv[i].push_back(k);
         }
     }
 
-    int cantGanadas = 0;
+    int cantGanadasB = 0;
+    int cantGanadasA = 0;
     bool prim_it;
     for (int j = 0; j < pv[0].size(); ++j) {
         for (int i = 0; i < pv[1].size(); ++i) {
@@ -1488,15 +1489,18 @@ vector<float> campOff(Team &original, LogicalBoard &t, vector<par> &posA, vector
                                 Team b(original.dameFilas(), original.dameColumnas(), 'B', single, original.dameTurnos());
                                 for (int l1 = 0; l1 < 20; ++l1) {
                                     jugar(original, b, t);
-                                    if (t.winner() == 'B') cantGanadas++;
+                                    if (t.winner() == 'B') cantGanadasB++;
+                                    if (t.winner() == 'A') cantGanadasA++;
                                     t.reset(posA, posB);
                                     //cout << "iteracion numero: " << l1 << endl;
                                     //cout << "el res es: " << r.first << ", " << r.second << endl;
                                 }
                                 cout << "termino el partido: " << contando << endl;
-                                cout << "El equipo B gano: " << cantGanadas << endl;
-                                if(cantGanadas >= 15) return single;
-                                cantGanadas = 0;
+                                cout << "El equipo B gano: " << cantGanadasB << endl;
+                                cout << "El equipo A gano: " << cantGanadasA << endl;
+                                if(cantGanadasB >= 15) return single;
+                                cantGanadasB = 0;
+                                cantGanadasA = 0;
                                 single.clear();
                                 contando++;
                             }
@@ -1710,26 +1714,26 @@ int main() {
 //    weights.push_back(0.71); // pesos[10] hay un rival en la trayectoria de la pelota.
 
     Team a(5, 10, 'A', weights, 20);
-    Team b(5, 10, 'B', weights, 20);
+//    Team b(5, 10, 'B', weights, 20);
 
-    vector<mov> jugada_A = {make_tuple(0, "PASE", make_pair(4, 2)),
-                            make_tuple(1, "MOVIMIENTO", make_pair(0, 0)),
-                            make_tuple(2, "MOVIMIENTO", make_pair(0, 0))};
+//    vector<mov> jugada_A = {make_tuple(0, "PASE", make_pair(4, 2)),
+//                            make_tuple(1, "MOVIMIENTO", make_pair(0, 0)),
+//                            make_tuple(2, "MOVIMIENTO", make_pair(0, 0))};
+//
+//    vector<mov> jugada_B = {make_tuple(3, "MOVIMIENTO", make_pair(0, 0)),
+//                            make_tuple(4, "MOVIMIENTO", make_pair(0, 0)),
+//                            make_tuple(5, "MOVIMIENTO", make_pair(0, 0))};
 
-    vector<mov> jugada_B = {make_tuple(3, "MOVIMIENTO", make_pair(0, 0)),
-                            make_tuple(4, "MOVIMIENTO", make_pair(0, 0)),
-                            make_tuple(5, "MOVIMIENTO", make_pair(0, 0))};
+//    tablero.makeMove(jugada_A, jugada_B);
 
-    tablero.makeMove(jugada_A, jugada_B);
-
-//    compLocal(a, tablero, posA, posB);
+    compLocal(a, tablero, posA, posB);
 
 //    imprimirPesos(a.damePesos());
 
-    par resultado = jugar(a, b, tablero);
+//    par resultado = jugar(a, b, tablero);
 //
-    cout << "Goles de TEAM A: " << resultado.first << endl;
-    cout << "Goles de TEAM B: " << resultado.second << endl;
+//    cout << "Goles de TEAM A: " << resultado.first << endl;
+//    cout << "Goles de TEAM B: " << resultado.second << endl;
 
 //    par m = make_pair(0, 0);
 //    vector<mov> jugada_B = {make_tuple(3, "MOVIMIENTO", m), make_tuple(4, "MOVIMIENTO", m), make_tuple(5, "MOVIMIENTO", m)};
