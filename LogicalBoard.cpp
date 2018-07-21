@@ -996,13 +996,15 @@ public:
         char rival = nombre == 'A' ? 'B' : 'A';
         int i_ju, j_ju, i_ri, j_ri;
         for (auto i = 0; i < trayectoria.size(); i++) {
-            int i_ju = t.getitem(nombre)[i].pos_i();
-            int j_ju = t.getitem(nombre)[i].pos_j();
-            if (trayectoria[i].first == i_ju && trayectoria[i].second == j_ju) return 1;
-            int i_ri = t.getitem(rival)[i].pos_i();
-            int j_ri = t.getitem(rival)[i].pos_j();
-            if (trayectoria[i].first == i_ri && trayectoria[i].second == j_ri) return (-1);
-        }
+			for(auto j = 0; j < 3; j++){		            
+				i_ju = t.getitem(nombre)[j].pos_i();
+            	j_ju = t.getitem(nombre)[j].pos_j();
+            	if (trayectoria[i].first == i_ju && trayectoria[i].second == j_ju) return 1;
+            	i_ri = t.getitem(rival)[j].pos_i();
+            	j_ri = t.getitem(rival)[j].pos_j();
+            	if (trayectoria[i].first == i_ri && trayectoria[i].second == j_ri) return (-1);
+        	}	
+		}
 
         return 0;
     }
